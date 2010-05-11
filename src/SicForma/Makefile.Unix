@@ -1,0 +1,40 @@
+
+CC=gcc
+CPP=g++
+CFLAGS=-I. -I../../include
+CPPFLAGSPARSIFALINC=-I../Libparsifal/include/libparsifal
+CPPFLAGS=$(CFLAGS)
+LIBNAME = libProRataSicForma.a
+
+TARGET = base64.o dtaSelectReader.o idData.o isotopologue.o msData.o mzReader.o ramp.o sicInfo.o
+
+all: $(TARGET)
+	ar rc $(LIBNAME) $(TARGET)
+	ranlib $(LIBNAME)
+
+dtaSelectReader.o:dtaSelectReader.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+msData.o:msData.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+mzReader.o:mzReader.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+isotopologue.o:isotopologue.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+sicInfo.o:sicInfo.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+idData.o:idData.cpp        
+	$(CPP) $(CPPFLAGS) -c $<
+
+ramp.o:ramp.c
+	$(CC) $(CFLAGS) -c $<
+
+base64.o:base64.c
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	rm -f $(TARGET)
