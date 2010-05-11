@@ -1,0 +1,42 @@
+
+CC=gcc
+CPP=g++
+CFLAGS=-O3 -I. -I../../include
+CPPFLAGS=$(CFLAGS)
+LIBNAME = ProRataCommon.dll
+
+TARGET= chromatogram.o  directoryStructure.o getopt.o  proRataConfig.o  proRataParameters.o \
+tinystr.o  tinyxml.o  tinyxmlerror.o  tinyxmlparser.o
+
+all: $(TARGET)
+	$(CPP) -shared -o $(LIBNAME) $(TARGET)
+	copy $(LIBNAME) ..\..\lib\
+
+chromatogram.o: chromatogram.cpp  
+	$(CPP) $(CPPFLAGS) -c $<
+
+directoryStructure.o: directoryStructure.cpp 
+	$(CPP) $(CPPFLAGS) -DUNICODE -c $<
+
+getopt.o: getopt.c  
+	$(CC) $(CFLAGS) -c $<
+
+proRataConfig.o: proRataConfig.cpp  
+	$(CPP) $(CPPFLAGS) -c $<
+
+proRataParameters.o: proRataParameters.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+tinyxmlparser.o:tinyxmlparser.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+tinyxmlerror.o:tinyxmlerror.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+tinyxml.o:tinyxml.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+tinystr.o:tinystr.cpp       
+	$(CPP) $(CPPFLAGS) -c $<
+clean:
+	del $(TARGET) 

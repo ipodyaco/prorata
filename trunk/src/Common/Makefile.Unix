@@ -1,0 +1,30 @@
+
+CC=gcc
+CPP=g++
+CFLAGS=-I. -I../../include -g3 -ggdb
+CPPFLAGS=$(CFLAGS)
+LIBNAME = libProRataCommon.a
+
+TARGET= chromatogram.o  directoryStructure.o getopt.o  proRataConfig.o  proRataParameters.o
+
+all: $(TARGET)
+	$(CPP) -shared -o $(LIBNAME) $(TARGET)
+	cp $(LIBNAME) ../../lib/
+
+chromatogram.o: chromatogram.cpp  
+	$(CPP) $(CPPFLAGS) -c $<
+
+directoryStructure.o: directoryStructure.cpp 
+	$(CPP) $(CPPFLAGS) -c $<
+
+getopt.o: getopt.c  
+	$(CC) $(CFLAGS) -c $<
+
+proRataConfig.o: proRataConfig.cpp  
+	$(CPP) $(CPPFLAGS) -c $<
+
+proRataParameters.o: proRataParameters.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+clean:
+	rm -f  $(TARGET) 

@@ -1,0 +1,5 @@
+Protein Quantification Results by ProRata 1.1
+
+Configurations
+
+locus	description
