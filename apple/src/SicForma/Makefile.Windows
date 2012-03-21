@@ -1,0 +1,53 @@
+
+CC=gcc
+CPP=g++
+CFLAGS=-I. -I../../include -g3 -ggdb
+CPPFLAGS=$(CFLAGS)
+LIBNAME = ProRataSicForma.dll
+
+TARGET = base64.o dtaSelectReader.o idData.o isotopologue.o msData.o mzReader.o ramp.o sicInfo.o
+
+all: $(TARGET)
+
+lib: $(TARGET)
+	$(CPP) -shared -o $(LIBNAME) $(TARGET)
+	copy $(LIBNAME) ..\..\lib\
+
+sicForma: DriverSicForma.o $(TARGET)
+	$(CPP) -o sicForma ../Common/*.o  DriverSicForma.o $(TARGET) wsock32.lib 
+
+topolo: DriverIsotopologue.o
+	$(CPP) -o topolo ../Common/*.o  DriverIsotopologue.o $(TARGET) wsock32.lib 
+	
+DriverSicForma.o:DriverSicForma.cpp
+	$(CPP) $(CPPFLAGS) -DUNICODE -c $<
+
+DriverIsotopologue.o:DriverIsotopologue.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+dtaSelectReader.o:dtaSelectReader.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+msData.o:msData.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+mzReader.o:mzReader.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+isotopologue.o:isotopologue.cpp
+	$(CPP) $(CPPFLAGS) -c $<
+
+sicInfo.o:sicInfo.cpp
+	$(CPP) $(CPPFLAGS) -DUNICODE  -c $<
+
+idData.o:idData.cpp        
+	$(CPP) $(CPPFLAGS) -c $<
+
+ramp.o:ramp.c
+	$(CC) $(CFLAGS) -c $<
+
+base64.o:base64.c
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	del $(TARGET)
