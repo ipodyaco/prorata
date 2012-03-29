@@ -812,7 +812,8 @@ vector< TiXmlElement * > Chromatogram::getElement(  TiXmlElement * pElement, con
 
 	itrTagListItr--;
 
-	for( pElement = pElement; pElement; pElement = pElement->NextSiblingElement( (*itrTagListItr).c_str() ) )
+	TiXmlElement * pElementFirst = pElement;
+	for( pElement = pElementFirst; pElement; pElement = pElement->NextSiblingElement( (*itrTagListItr).c_str() ) )
 	{
 		vpElementVector.push_back( pElement );
 	}

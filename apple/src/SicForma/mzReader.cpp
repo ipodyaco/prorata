@@ -5,17 +5,11 @@ using namespace std;
 
 mzReader::mzReader()
 {
-	szXMLFile = "";
-	iAnalysisFirstScan = 0;
-	iAnalysisLastScan = 0;
+	szXMLFile = "NONE";
 }
 
 mzReader::~mzReader()
 {
-	if( szXMLFile != "" )
-	{
-		rampCloseFile(pFI);
-	}
 
 }
 
@@ -23,52 +17,70 @@ bool mzReader::setFilename( string sFilename )
 {
 	// Try to open the file.
 	szXMLFile = sFilename;
-	if ( (pFI = rampOpenFile( szXMLFile.c_str() )) == NULL)
+	if ( !indexFile.BuildIndex( szXMLFile ) )
 	{
-		cout << "ERROR: Could not open the given mzXML or mzData file " <<
+		cout << "ERROR: Could not open the given file " <<
 			szXMLFile << endl;
 		return false;
 	}
-
-	// Get the index offset.
-	indexOffset = getIndexOffset( pFI );
-
-	// Look in to the indexes.
-	iAnalysisFirstScan = 1;
-	pScanIndex = readIndex( pFI , indexOffset, &iAnalysisLastScan );
-
+	
 	// clear the deqMassSpecBuffer
 	deqMassSpecBuffer.clear();
 
 	return true;
 }
 
+bool mzReader::getAllScanNumbers( vector<int> & viAllScanNumbers )
+{
+	viAllScanNumbers.clear();
+	viAllScanNumbers = indexFile.scan_numbers();
+
+	if ( viAllScanNumbers.size() == 0 )
+	{
+		cout << "no scan. empty MS file =" << szXMLFile << endl;
+		return false;
+	}
+
+	return true;
+}
+
+
 bool mzReader::getHeaderInfo(unsigned long int iScan, 
 		int * piMSLevel, double * pdPrecursorMZ, 
 		int * piPeaksCount, double * pdRetentionTime)
 {
-	if ( iScan < iAnalysisFirstScan || iScan > iAnalysisLastScan )
-	{
-		return false;
-	}
+	*piMSLevel = 1;
+	*pdPrecursorMZ = 0;
+	*piPeaksCount = 0;
+	*pdRetentionTime = 0;
+	  cout << "iScan " << iScan << endl;
 
-	// Now read the header
-	readHeader( pFI, pScanIndex[iScan], &scanHeader);
+  vector <string> scan_data;
+  istringstream input;
 
-	*piMSLevel = scanHeader.msLevel;
-	
-	// get the precursor ion's m/z for MSn scans
-	if( scanHeader.msLevel > 1 )
-		*pdPrecursorMZ = scanHeader.precursorMZ;
-	else
-		*pdPrecursorMZ = 0;
-	
-	*piPeaksCount = scanHeader.peaksCount;
+  if( !indexFile.GetScanText((int)iScan, scan_data) ) return false;
+  
+  vector <string>::iterator viter;
+  int i = 0;
+  
+  for(viter = scan_data.begin(); viter != scan_data.end(); viter++) 
+  {
+	  ++i;
+    TokenVector words((*viter), " \t\n\r");
+    if(words.size() == 3 && words[0][0] == 'I' && words[1] == "RetentionTime") 
+    { 
+      istringstream input(words[2]);
+      input >> *pdRetentionTime;
+    }
+    if(words[0][0] >= '0' && words[0][0] <= '9')
+    {
 
-	// convert retention time's unit from seconds to minutes
-	*pdRetentionTime = ( scanHeader.retentionTime / 60 );
+	    *piPeaksCount =  scan_data.size() - i + 1;
+	    break;
+    }
+  }
 
-	return true;
+  return true;
 }
 
 
@@ -76,81 +88,30 @@ bool mzReader::getPeaks(unsigned long int iScan,
 		int iPeaksCount, vector<float> & vfMass, 
 		vector<float> & vfInten )
 {
+
 	// clear the vector
 	vfMass.clear();
 	vfInten.clear();
 	
-	// reserve the correct capacity
-	vfMass.reserve( iPeaksCount );
-	vfInten.reserve( iPeaksCount );
-	
-	int iPeaksCountCopy = iPeaksCount;
-	int n = 0;
-	
-	if ( iScan < iAnalysisFirstScan || iScan > iAnalysisLastScan )
-	{
-		cout << "ERROR: Scan " << iScan << " is not between the first scan " << iAnalysisFirstScan 
-			<< " and the last scan " << iAnalysisLastScan<< endl;
-		return false;
-	}
+  vector <string> scan_data;
+  if( !indexFile.GetScanText((int)iScan, scan_data) ) return false;
 
-	if ( iPeaksCount <= 0 )
-	{
-	//	cout << "WARNING: Scan " << iScan << " have no peaks. " << endl;
-		vfMass.push_back( 0.0 );
-		vfInten.push_back( 0.0 );
-		return true;
-	}
-
-	// pPeaks is an array of float dynamically allocated by RAMP
-	// the float alternates between a m/z and its intensity
-
-	float *pPeaks;
-
-	pPeaks = readPeaks( pFI, pScanIndex[iScan] );
-
-	float fUpperBound =  numeric_limits<float>::max() / 2.0;
-	
-	while ( iPeaksCountCopy-- > 0 )
-	{
-
-		/*
-		vfMass.push_back( pPeaks[n] );
-		n++;
-		vfInten.push_back( pPeaks[n] );
-		n++;
-		*/
-	
-		// check for -1.0#QNAN
-		if ( pPeaks[n] >= 0.0  && pPeaks[n] <= fUpperBound )
-		{
-			vfMass.push_back( pPeaks[n] );
-		}
-		else
-		{
-			cout << "WARNING: invalid m/z = " << pPeaks[n] << " at scan " << iScan << "! Re-set to zero" << endl;
-			vfMass.push_back( 0.0 );
-		}
-		
-		n++;
-
-		if ( pPeaks[n] >= 0.0  && pPeaks[n] <= fUpperBound )
-		{
-			vfInten.push_back( pPeaks[n] );
-		}
-		else
-		{
-			cout << "WARNING: invalid intensity = " << pPeaks[n] << " at scan " << iScan << "! Re-set to zero" << endl;
-			vfInten.push_back( 0.0 );
-		}
-		
-		n++;
-		
-		
-	}
-
-	// free the memory 
-	free( pPeaks );
+  vector <string>::iterator viter;
+  istringstream input;
+  float fMassTmp;
+  float fIntenTmp;
+      
+  for(viter = scan_data.begin(); viter != scan_data.end(); viter++) 
+  {
+	  // if a line starts with a digit
+    if((*viter)[0] >= '0' && (*viter)[0] <= '9')
+    {
+	    input.str(*viter);
+	    input >> fMassTmp >> fIntenTmp;
+	    vfMass.push_back(fMassTmp);
+	    vfInten.push_back(fIntenTmp);
+    }
+  }
 
 	return true;
 }

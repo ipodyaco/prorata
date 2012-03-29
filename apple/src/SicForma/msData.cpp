@@ -20,17 +20,18 @@ bool MSdata::setFilename( string sFilename)
 		return false;
 	}
 	
-	iAnalysisFirstScan = myMZreader.getAnalysisFirstScan();
-	iAnalysisLastScan = myMZreader.getAnalysisLastScan();
-
 	unsigned long int iScan = 0;
 	int iMSlevel = 0;
 	double dPrecurorMZ = 0;
 	int iPeaksCount = 0;
 	double dRetentionTime = 0;
 
-	for( iScan = iAnalysisFirstScan; iScan <= iAnalysisLastScan; ++iScan )
+	vector<int> viAllScanNumbers;
+	myMZreader.getAllScanNumbers(viAllScanNumbers);
+
+	for(int i = 0; i < viAllScanNumbers.size(); ++i )
 	{
+		iScan = viAllScanNumbers[i];
 		if( myMZreader.getHeaderInfo( iScan, &iMSlevel, &dPrecurorMZ, &iPeaksCount, &dRetentionTime ) )
 		{
 			mTime4Scans[ iScan ] = (float)dRetentionTime;

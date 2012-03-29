@@ -451,11 +451,13 @@ void ProRataConfig::getParameters( TiXmlDocument & txdConfigFile )
 	issStream.str( sTemp );
 	issStream >> dSmoothingProbSpace;
 
+	/*
 	vsTagList[2] = "LN_LIKELIHOOD_CUTOFF_OFFSET";
 	sTemp =  getValue( txdConfigFile, vsTagList );
 	issStream.clear();
 	issStream.str( sTemp );
 	issStream >> dLnLikelihoodCutoffOffset;
+	*/
 	
 	vsTagList[2] = "MAX_CI_WIDTH";
 	sTemp =  getValue( txdConfigFile, vsTagList );

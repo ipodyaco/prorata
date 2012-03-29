@@ -8,8 +8,9 @@
 #include <deque>
 #include <stdio.h>
 #include <stdlib.h>
-#include "ramp.h"
-#include "base64.h"
+#include "scanindex.h"
+#include "tokenvector.h"
+
 
 using namespace std;
 
@@ -55,13 +56,9 @@ class mzReader
 		 */ 
 		bool setFilename( string sFilename );
 
-		// get the first scan number
-		unsigned long int getAnalysisFirstScan()
-		{	return iAnalysisFirstScan; 	}
+		// get a list of all scan numbers in this file
+		bool getAllScanNumbers(vector<int> & viAllScanNumbers);
 
-		// get the last scan number
-		unsigned long int getAnalysisLastScan()
-		{	return iAnalysisLastScan; 	}
 
 		/*
 		 * get the header information for a scan
@@ -104,31 +101,9 @@ class mzReader
 		// input filename
 		string szXMLFile;
 
-		/*
-		 * internal variables used by RAMP
-		 */
 
-		RAMPFILE  *pFI;
-
-		off_t  indexOffset;
-/*
- * this is for Visual C++ compilation 
-#if _WIN32
-		__int64  *pScanIndex;
-#else
-		off_t  *pScanIndex;
-#endif
-*/
-		// this is for Linux and MinGW compilation
-		off_t  *pScanIndex;
-		/*
-		 *  a structure used to store the header information
-		 *  it is define in RAMP.h
-		 */ 
-		ScanHeaderStruct scanHeader;
-
-		int iAnalysisFirstScan;
-		int iAnalysisLastScan;
+		// ScanIndex class defined in scanindex.h
+		ScanIndex indexFile;
 };
 
 #endif //MZREADER_H
