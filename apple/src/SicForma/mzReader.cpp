@@ -53,7 +53,6 @@ bool mzReader::getHeaderInfo(unsigned long int iScan,
 	*pdPrecursorMZ = 0;
 	*piPeaksCount = 0;
 	*pdRetentionTime = 0;
-	  cout << "iScan " << iScan << endl;
 
   vector <string> scan_data;
   istringstream input;
@@ -93,25 +92,26 @@ bool mzReader::getPeaks(unsigned long int iScan,
 	vfMass.clear();
 	vfInten.clear();
 	
-  vector <string> scan_data;
-  if( !indexFile.GetScanText((int)iScan, scan_data) ) return false;
+	vector <string> scan_data;
+	if( !indexFile.GetScanText((int)iScan, scan_data) ) return false;
 
-  vector <string>::iterator viter;
-  istringstream input;
-  float fMassTmp;
-  float fIntenTmp;
-      
-  for(viter = scan_data.begin(); viter != scan_data.end(); viter++) 
-  {
-	  // if a line starts with a digit
-    if((*viter)[0] >= '0' && (*viter)[0] <= '9')
-    {
-	    input.str(*viter);
-	    input >> fMassTmp >> fIntenTmp;
-	    vfMass.push_back(fMassTmp);
-	    vfInten.push_back(fIntenTmp);
-    }
-  }
+	vector <string>::iterator viter;
+	float fMassTmp;
+	float fIntenTmp;
+	string sLine;
+
+	for(viter = scan_data.begin(); viter != scan_data.end(); viter++) 
+	{
+		sLine = (*viter);
+		// if a line starts with a digit
+		if(sLine[0] >= '0' && sLine[0] <= '9')
+		{
+		    istringstream input(sLine);
+		    input >> fMassTmp >> fIntenTmp;
+		    vfMass.push_back(fMassTmp);
+		    vfInten.push_back(fIntenTmp);
+		}
+	}
 
 	return true;
 }
@@ -132,6 +132,7 @@ bool mzReader::getPeaksBuffered(unsigned long int iScan,
 		{
 			vfMass = iterBuffer->vfMass;
 			vfInten = iterBuffer->vfInten;
+
 			return true;
 		}
 	}
@@ -142,6 +143,7 @@ bool mzReader::getPeaksBuffered(unsigned long int iScan,
 	bool bSucess = getPeaks( iScan, iPeaksCount, vfMyMass, vfMyInten );
 	vfMass = vfMyMass;
 	vfInten = vfMyInten;
+
 
 	// remove the oldest MassSpectrum from the Buffer
 	if( deqMassSpecBuffer.size() > BUFFER_SIZE )

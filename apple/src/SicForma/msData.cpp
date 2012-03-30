@@ -70,8 +70,30 @@ bool MSdata::getTime4Scan( unsigned long int iScan, float & fTime )
 	}
 	else
 	{
-		fTime = -999;
-		return false;
+		// find the two scans immediately before and after iScan
+		// interpolate the retention time of the two scans in proportation to the scan numbers
+		long int iDistanceCurrent = 0;
+		float fTimeBefore = 0;
+		float fTimeAfter = 0;
+		long int iDistanceBefore = -1000000;
+		long int iDistanceAfter = 1000000;
+		for( iterTime = mTime4Scans.begin(); iterTime != mTime4Scans.end(); ++iterTime )
+		{
+			iDistanceCurrent = iterTime->first - iScan;
+			if( iDistanceCurrent > iDistanceBefore && iDistanceCurrent < 0 )
+			{
+				iDistanceBefore = iDistanceCurrent;
+				fTimeBefore = iterTime->second;
+			}
+			if( iDistanceCurrent < iDistanceAfter && iDistanceCurrent > 0 )
+			{
+				iDistanceAfter = iDistanceCurrent;
+				fTimeAfter = iterTime->second;
+			}
+		}
+		float fTimeInterpolationOffset = (fTimeAfter - fTimeBefore ) * (abs(iDistanceBefore)/(abs(iDistanceBefore)+iDistanceAfter));
+		fTime = fTimeBefore + fTimeInterpolationOffset;
+		return true;
 	}
 }
 
@@ -152,6 +174,7 @@ double MSdata::computeIntensity( const MZwindows & mzWindows, const vector<float
 	int iMZWinIndex = 0;
 	int iMZwindowNumber = mzWindows.vfLowerMZ.size();
 	
+
 	double dSum = 0.0;
 	for( i = 0; i < vfMass.size(); ++i )
 	{

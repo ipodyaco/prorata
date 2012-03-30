@@ -46,9 +46,6 @@ class MSdata
 		// the mzReader for random access of mzXML/mzData
 		mzReader myMZreader;
 
-		unsigned long int iAnalysisFirstScan;
-		unsigned long int iAnalysisLastScan;
-
 		// the look-up table of the peaks count for full scans
 		map< unsigned long int, int, less< unsigned long int > > mPeaksCount4FullScans;
 
