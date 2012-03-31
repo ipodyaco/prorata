@@ -3,7 +3,7 @@
 	<!-- Parameters for SIC-Forma -->	
 	<SIC_EXTRACTION>
 		<!-- options: mzXML or mzData -->
-		<MS_FILE_TYPE>	mzXML	</MS_FILE_TYPE>
+		<MS_FILE_TYPE>	MS1	</MS_FILE_TYPE>
 		<!-- options: DTASelect -->
 		<ID_FILE_TYPE>	DTASelect	</ID_FILE_TYPE>
 		<!-- FASTA file -->
