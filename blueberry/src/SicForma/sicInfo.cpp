@@ -66,9 +66,11 @@ bool SICinfo::process(vector< PeptideInfo * > & vpPeptideInfo)
 	vpPeptideInfo.clear();
 
 	// creat the ID data for the given sIDfilename
-	cout << " reading the ID file  " << sIDfilename << endl;
+	cout << "Reading ID file: " << sIDfilename << endl;
 	pIDdata = new IDdata;
-	pIDdata->setFilename( sIDfilename );
+	if ( !pIDdata->setFilename( sIDfilename ) ){
+		return false;
+	}
 
 	// the return vector from pIDdata->getIDvector function, which
 	// given all IDs from a given MS file
@@ -86,7 +88,7 @@ bool SICinfo::process(vector< PeptideInfo * > & vpPeptideInfo)
 	// for each MS file, a xic.xml file will be created to save all chromatograms extracted from that MS file
 	for( i = 0; i < vsMZfilename.size( ); ++i )
 	{
-		cout << "reading MS files " << vsMZfilename[i] << endl;
+		cout << "Processing MS file: " << vsMZfilename[i] << endl;
 		// creat the MSdata object
 		pMSdata = new MSdata;
 		pMSdata->setFilename( vsMZfilename[i] );
@@ -96,9 +98,11 @@ bool SICinfo::process(vector< PeptideInfo * > & vpPeptideInfo)
 		pIDdata->consolidateIDlist( pMSdata );
 		pIDdata->getIDvector( pMSdata->getBaseFilename(), vpIDvector );
 
+		cout << "Total number of chromatograms to be extracted: " << vpIDvector.size() << endl;
 		// iterator thru all IDs in the vpIDvector to extract chromatogram 
 		for( j = 0 ; j < vpIDvector.size(); ++j )
 		{
+			cout << "Extracting chromatogram #" << j << "\r";
 			// creat a chromatogram and set all its variables
 			Chromatogram chro;
 			extractChromatogram( (*vpIDvector[j]), pMSdata->getFilename(), (j+1), chro );

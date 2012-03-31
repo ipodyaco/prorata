@@ -6,12 +6,10 @@
 #include <sys/stat.h> 
 #include <sys/types.h> 
 #include "chromatogram.h"
-#include "proRataParameters.h"
 #include "directoryStructure.h"
 #include "idData.h"
 #include "msData.h"
 #include "isotopologue.h"
-
 #include "peptideInfo.h"
 #include "peptideRatio.h"
 
