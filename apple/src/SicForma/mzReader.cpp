@@ -84,8 +84,7 @@ bool mzReader::getHeaderInfo(unsigned long int iScan,
 
 
 bool mzReader::getPeaks(unsigned long int iScan, 
-		int iPeaksCount, vector<float> & vfMass, 
-		vector<float> & vfInten )
+		vector<float> & vfMass, vector<float> & vfInten )
 {
 
 	// clear the vector
@@ -117,8 +116,7 @@ bool mzReader::getPeaks(unsigned long int iScan,
 }
 
 bool mzReader::getPeaksBuffered(unsigned long int iScan, 
-		int iPeaksCount, vector<float> & vfMass, 
-		vector<float> & vfInten )
+		vector<float> & vfMass, vector<float> & vfInten )
 {
 	// clear the vector
 	vfMass.clear();
@@ -140,7 +138,7 @@ bool mzReader::getPeaksBuffered(unsigned long int iScan,
 	// if this scan is not in the buffer, get it with the normal function getPeaks 
 	vector< float > vfMyMass;
 	vector< float > vfMyInten;
-	bool bSucess = getPeaks( iScan, iPeaksCount, vfMyMass, vfMyInten );
+	bool bSucess = getPeaks( iScan, vfMyMass, vfMyInten );
 	vfMass = vfMyMass;
 	vfInten = vfMyInten;
 

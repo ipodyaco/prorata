@@ -33,7 +33,7 @@ class ProRataConfig
 		static char getSeparator();
 
 		static string getMZxmlDirectory()
-		{ return sWorkingDirectory +  "mzXML" + ProRataConfig::getSeparator(); }
+		{ return sWorkingDirectory +  "MS" + ProRataConfig::getSeparator(); }
 
 		static string getXICxmlDirectory()
 		{ return sWorkingDirectory +  "xic" + ProRataConfig::getSeparator(); }

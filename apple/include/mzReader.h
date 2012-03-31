@@ -16,7 +16,7 @@ using namespace std;
 
 // the number of MassSpectrum objects that should be 
 // saved in the deqMassSpecBuffer
-#define BUFFER_SIZE 200
+#define BUFFER_SIZE 2000
 
 /*
  * a class for holding mass spectrum data
@@ -73,7 +73,7 @@ class mzReader
 		 * getHeaderInfo should be called prior to getPeak to retrieve iPeaksCount
 		 * vfMass: m/z column; vfInten: intensity column
 		 */
-		bool getPeaks( unsigned long int iScan, int iPeaksCount, 
+		bool getPeaks( unsigned long int iScan,  
 				vector<float> & vfMass, vector<float> & vfInten );
 
 		/*
@@ -84,7 +84,7 @@ class mzReader
 		 * deqMassSpecBuffer and the the oldest MS scan in deqMassSpecBuffer will be poped out
 		 */
 		
-		bool getPeaksBuffered( unsigned long int iScan, int iPeaksCount, 
+		bool getPeaksBuffered( unsigned long int iScan,  
 				vector<float> & vfMass, vector<float> & vfInten );
 
 

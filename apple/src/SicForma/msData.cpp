@@ -38,7 +38,6 @@ bool MSdata::setFilename( string sFilename)
 			if( iMSlevel == 1 )
 			{
 				mTime4FullScans[ iScan ] = (float)dRetentionTime;
-				mPeaksCount4FullScans[ iScan ] = iPeaksCount;
 			}
 		}
 		else
@@ -134,32 +133,21 @@ bool MSdata::getIntensityVectors( const vector< unsigned long int > & viScanVect
 	for( i = 0; i < viScanVector.size(); ++i )
 	{
 		iScan = viScanVector[i];
-		iterPeakCounts = mPeaksCount4FullScans.find( iScan );	
-		if( iterPeakCounts != mPeaksCount4FullScans.end() )
+		if( myMZreader.getPeaksBuffered( iScan, vfMass, vfIntensity ) )
 		{
-			iPeaksCount = iterPeakCounts->second;
-			if( myMZreader.getPeaksBuffered( iScan, iPeaksCount, vfMass, vfIntensity ) )
+			for( j = 0; j < vSIC.size(); ++j )
 			{
-				for( j = 0; j < vSIC.size(); ++j )
-				{
-					dIntensity = computeIntensity( vSIC[j].mzWindows, vfMass, vfIntensity );
-					vSIC[j].vdIntensity.push_back( dIntensity );
-				}
-			}
-			else
-			{
-				bNoError = false;
-				for( j = 0; i <  vSIC.size(); ++i )
-					vSIC[j].vdIntensity.push_back( 0.0 );
-
+				dIntensity = computeIntensity( vSIC[j].mzWindows, vfMass, vfIntensity );
+				vSIC[j].vdIntensity.push_back( dIntensity );
 			}
 		}
 		else
 		{
-			cout << "WARNING: cannot find the full scan = " << iScan << endl;
 			bNoError = false;
-			for( j = 0; j < vSIC.size(); ++j )
+			cout << "WARNING: cannot find the full scan = " << iScan << endl;
+			for( j = 0; i <  vSIC.size(); ++i )
 				vSIC[j].vdIntensity.push_back( 0.0 );
+
 		}
 	}
 	return bNoError;

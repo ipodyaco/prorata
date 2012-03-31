@@ -46,9 +46,6 @@ class MSdata
 		// the mzReader for random access of mzXML/mzData
 		mzReader myMZreader;
 
-		// the look-up table of the peaks count for full scans
-		map< unsigned long int, int, less< unsigned long int > > mPeaksCount4FullScans;
-
 		// the look-up table of the retention time for full scans
 		map< unsigned long int, float, less< unsigned long int > > mTime4FullScans;
 
