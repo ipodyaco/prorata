@@ -18,18 +18,26 @@ bool SICinfo::setFilename( string sIDfilenameInput )
 	// set ID filename
 	sIDfilename =  sIDfilenameInput;
 
-	// get the name of thee working directory 
+	// get the name of the working directory that contains MS files
 	string sMZxmlDirectory = ProRataConfig::getWorkingDirectory();
 
 	// remove the last back slash or forward slash in the sMZxmlDirectory
 	int iLength = sMZxmlDirectory.length();
 	DirectoryStructure dirStructure( sMZxmlDirectory.substr( 0, (iLength - 1) )  );
 	
-	// get all the filenames matching the extension name specified in ProRataConfig
-	// and save them into vsMZfilename
-	dirStructure.setPattern( ProRataConfig::getMSfileType() );
-	vsMZfilename.clear();
+	vsMZfilename.clear();	
+	// First, try to find FT1 files to process
+	dirStructure.setPattern( "FT1" );
 	dirStructure.getFiles( vsMZfilename );
+	if( vsMZfilename.size() == 0 ){
+		// if there is no FT1 file, try to find MS1 files to process
+		dirStructure.setPattern( "MS1" );
+		dirStructure.getFiles( vsMZfilename );
+		if(vsMZfilename.size() == 0){
+			cout << "ERROR: cannot find any FT1 or MS1 file in the working directory: " << sMZxmlDirectory << endl << endl;
+			return false;
+		}
+	}
 
 	int i;
 	int j;
@@ -106,6 +114,9 @@ bool SICinfo::process(vector< PeptideInfo * > & vpPeptideInfo)
 			// creat a chromatogram and set all its variables
 			Chromatogram chro;
 			extractChromatogram( (*vpIDvector[j]), pMSdata->getFilename(), (j+1), chro );
+			if(ProRataConfig::getWriteChro()){
+				chro.writeChroFile();
+			}
 			// calculate peptide ratio and populate vpPeptideInfo
 			PeptideRatio currentPeptideRatio;
 			if( currentPeptideRatio.process( chro ) )

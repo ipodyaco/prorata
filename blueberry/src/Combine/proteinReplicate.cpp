@@ -69,17 +69,9 @@ bool ProteinReplicate::runQuantification( string sInputLocus )
 	ProRataConfig::setRemoveAmbiguousPeptides(bRemoveAmbiguousPeptide);
 	ProRataConfig::setMinPeptideNumber(iMinPeptideNumber);
 	ProRataConfig::setMaxCIwidth(dMaxCIwidth); 
-	ProRataConfig::setMinLog2SNR(dMinLog2SNR); 
-	ProRataConfig::setMaxLog2SNR(dMaxLog2SNR); 
 	ProRataConfig::setMLEMinLog2Ratio(dMLEMinLog2Ratio);
 	ProRataConfig::setMLEMaxLog2Ratio(dMLEMaxLog2Ratio);
 	ProRataConfig::setLog2RatioDiscretization(dLog2RatioDiscretization);
-	ProRataConfig::setSDSlope(dSDSlope); 
-	ProRataConfig::setSDIntercept(dSDIntercept); 
-	ProRataConfig::setMeanSlope(dMeanSlope); 
-	ProRataConfig::setMeanIntercept(dMeanIntercept); 
-	ProRataConfig::setSmoothingProbilitySpace(dSmoothingProbSpace); 
-	ProRataConfig::setLnLikelihoodCutoffOffset(dLnLikelihoodCutoffOffset); 
 
 	sLocus = sInputLocus;
 

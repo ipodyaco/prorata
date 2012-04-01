@@ -24,11 +24,14 @@ int main( int argc, char * argv[] )
 		  if(vsArguments[i] == "-w") { sWorkingDirectory = vsArguments[++i]; }
 		  else if (vsArguments[i] == "-c") { sConfigFilename = vsArguments[++i]; }
 		  else if (vsArguments[i] == "-i") { sIDFilename = vsArguments[++i]; }
+		  else if (vsArguments[i] == "--chro") { ProRataConfig::setWriteChro(true); }
 		  else if (vsArguments[i] == "-h" || vsArguments[i] == "--help") {
-			  cout << "Usage: -w WorkingDirectory -c ConfigurationFile -i IdentificationFile" << endl;
-			  cout << "Default: WorkingDirectory is the current directory; " << endl;
-			  cout << "ConfigurationFile is ProRataConfig.xml in the working directory" << endl;
-			  cout << "IdentificationFile is DTASelect-filter.txt in the working directory" << endl;
+			  cout << "Usage: -w WorkingDirectory -c ConfigurationFile -i IdentificationFile --chro" << endl;
+			  cout << "ProRata reads MS1 files from WorkingDirectory and writes output to WorkingDirectory" << endl;
+			  cout << "If --chro is provided, chromatograms will be written to chro files" << endl;
+			  cout << "-w Default: default WorkingDirectory is the current directory; " << endl;
+			  cout << "-c Default: default ConfigurationFile is ProRataConfig.xml in WorkingDirectory" << endl;
+			  cout << "-i Default: default IdentificationFile is DTASelect-filter.txt in WorkingDirectory" << endl;
 			  exit(0);
 	    }
 	    else { 

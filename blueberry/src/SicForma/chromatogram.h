@@ -98,6 +98,8 @@ class Chromatogram
 		Chromatogram();
 		~Chromatogram();
 
+		bool writeChroFile();
+
 		/*
 		 * accessors
 		 */

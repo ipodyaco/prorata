@@ -253,3 +253,78 @@ void Chromatogram::setValidity( bool bValidityInput )
 	bValidity = bValidityInput;
 }
 
+bool Chromatogram::writeChroFile()
+{
+	string sChroFilename;
+	// Get the base filename of the MS file
+	string::size_type n = sMSfilename.rfind( ".", ( sMSfilename.length() - 1 ) );  
+	if( n != string::npos )
+		sChroFilename = sMSfilename.substr( 0, n );
+	else
+		sChroFilename = sMSfilename;
+	// Add path and Append identifier and extension name
+	sChroFilename = ProRataConfig::getWorkingDirectory() + sChroFilename;
+	sChroFilename += ".chro";
+	ofstream fStreamChro( sChroFilename.c_str(), ios::app);
+	if( !fStreamChro )
+	{
+		cout << "ERROR: cannot write Chro file: " << sChroFilename << endl;
+		return false;
+	}
+
+	// add SEQUENCE and CHARGE_STATE
+	fStreamChro << "Chro\t" << iIdentifier << "\tSeq\t" << myID.sSequence << "\tZ\t" << myID.iChargeState << endl;
+	
+
+	unsigned int i;
+	// add MS2SCORING
+	for( i = 0; i < myID.vMS2Scoring.size(); ++i )
+	{
+
+		fStreamChro << "ID\t" << myID.vMS2Scoring[i].sIDfilename << "\t";
+		fStreamChro << "Scan\t" << myID.vMS2Scoring[i].iMSMSscan << "\t";
+		fStreamChro << "Time\t" << myID.vMS2Scoring[i].fRetentionTime << "\t";
+		fStreamChro << "Score\t" << myID.vMS2Scoring[i].fScore << endl;
+	}
+	// add PROTEIN
+	for( i = 0; i < myID.vProtein.size(); ++i )
+	{
+		fStreamChro << "Locus\t" << myID.vProtein[i].sLocus << endl;
+	}
+
+	unsigned int j;
+
+	// add MZ_WINDOW
+	for( i = 0; i < vSIC.size(); ++i )
+	{
+		fStreamChro << "M/Z\t" << vSIC[i].sName << "\t";
+		for( j = 0; j < vSIC[i].mzWindows.vfUpperMZ.size(); ++j )
+		{
+			fStreamChro  << "[" << vSIC[i].mzWindows.vfLowerMZ[j] << "-" << vSIC[i].mzWindows.vfUpperMZ[j] << "]\t";
+		}
+		fStreamChro<< endl;		
+	}
+
+	fStreamChro << "Scan	Time	";
+	for( j = 0; j < vSIC.size(); ++j )
+	{
+		fStreamChro << vSIC[j].sName << "\t";
+	}
+	fStreamChro << endl;
+
+	// add SIC
+	for( i = 0; i < viScan.size(); ++i )
+	{
+		fStreamChro << viScan[i] << "\t" << vfTime[i] << "\t";
+		for( j = 0; j < vSIC.size(); ++j )
+		{
+			fStreamChro << vSIC[j].vdIntensity[i] << "\t";
+		}
+		fStreamChro << endl;
+
+	}
+
+	fStreamChro.close();
+	return true;
+}
+

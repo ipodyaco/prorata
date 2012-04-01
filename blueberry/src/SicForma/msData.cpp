@@ -103,7 +103,7 @@ void MSdata::getScanVectorTimeVector( float fStartTime, float fEndTime,
 	for( iterTime = mTime4FullScans.begin(); iterTime != mTime4FullScans.end(); ++iterTime )
 	{
 		fTime = iterTime->second;
-		if( ( fTime > fStartTime )&&( fTime < fEndTime ) )
+		if( ( fTime >= fStartTime )&&( fTime <= fEndTime ) )
 		{
 			vfTimeVector.push_back( fTime );
 			viScanVector.push_back( iterTime->first );
@@ -119,10 +119,8 @@ bool MSdata::getIntensityVectors( const vector< unsigned long int > & viScanVect
 	vector<float> vfIntensity;
 	
 	unsigned long int iScan = 0;
-	int iPeaksCount = 0;
 	map< unsigned long int, int, less< unsigned long int > >::iterator iterPeakCounts;
 	
-	int iMZwindowNumber = vSIC.size();
 	int i = 0;
 	int j = 0;
 
