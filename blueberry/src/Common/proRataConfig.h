@@ -36,6 +36,9 @@ class ProRataConfig
 		
 		static char getSeparator();
 
+		// If there is only one isotopologue, this is a label-free run and return true
+		static bool getIsLabelFree() {return bIsLabelFree;};
+
 		/*
 		 * get the version number of ProRata
 		 */
@@ -199,6 +202,8 @@ class ProRataConfig
 
 		static ProRataConfig* proRataConfigSingleton;
 
+		void setIsLabelFree();
+
 		// the filename of the configuration file
 		static string sFilename;
 
@@ -207,6 +212,9 @@ class ProRataConfig
 
 		// whether or not to write chro files
 		static bool bIfWriteChro;
+
+		// whether this is a label-free analysis or not
+		static bool bIsLabelFree;
 
 		// load all static parameters into the memory
 		// when openning the file 

@@ -76,8 +76,15 @@ int main( int argc, char * argv[] )
 	if( !mainProteomeInfo.processProteins() )
 		cout << "Error: cannot process protein " << endl;
 
-	mainProteomeInfo.writeFileQPR();
-	mainProteomeInfo.writeFileTAB();
+	if(!ProRataConfig::getIsLabelFree())
+	{
+		mainProteomeInfo.writeFileQPR();
+		mainProteomeInfo.writeFileTAB();
+	}
+	else
+	{
+		mainProteomeInfo.writeFileLabelFree();
+	}
 
 	cout << "Quantification completed!" << endl;
 

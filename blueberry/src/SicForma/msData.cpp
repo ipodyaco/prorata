@@ -29,7 +29,7 @@ bool MSdata::setFilename( string sFilename)
 	vector<int> viAllScanNumbers;
 	myMZreader.getAllScanNumbers(viAllScanNumbers);
 
-	for(int i = 0; i < viAllScanNumbers.size(); ++i )
+	for(unsigned int i = 0; i < viAllScanNumbers.size(); ++i )
 	{
 		iScan = viAllScanNumbers[i];
 		if( myMZreader.getHeaderInfo( iScan, &iMSlevel, &dPrecurorMZ, &iPeaksCount, &dRetentionTime ) )
@@ -121,8 +121,8 @@ bool MSdata::getIntensityVectors( const vector< unsigned long int > & viScanVect
 	unsigned long int iScan = 0;
 	map< unsigned long int, int, less< unsigned long int > >::iterator iterPeakCounts;
 	
-	int i = 0;
-	int j = 0;
+	unsigned int i = 0;
+	unsigned int j = 0;
 
 	double dIntensity;
 
@@ -156,7 +156,7 @@ double MSdata::computeIntensity( const MZwindows & mzWindows, const vector<float
 	float fLowerMZ = 0;
 	float fUpperMZ = 0;
 	float fPeakMass = 0;
-	int i = 0;
+	unsigned int i = 0;
 	int iMZWinIndex = 0;
 	int iMZwindowNumber = mzWindows.vfLowerMZ.size();
 	

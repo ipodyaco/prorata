@@ -12,6 +12,7 @@
 #include "isotopologue.h"
 #include "peptideInfo.h"
 #include "peptideRatio.h"
+#include "peptideLabelFree.h"
 
 
 using namespace std;

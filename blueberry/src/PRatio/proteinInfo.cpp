@@ -13,6 +13,10 @@ ProteinInfo::ProteinInfo()
 	iQuantifiedPeptides = 0;
 	iIdentifiedPeptides = 0;
 	iValidPeptides = 0;
+
+	dTotalPeakHeight = 0;
+	dTotalPeakArea = 0;
+	iMS2SpectralCounts = 0;
 }
 
 ProteinInfo::~ProteinInfo()
@@ -21,6 +25,25 @@ ProteinInfo::~ProteinInfo()
 	// vpPeptideInfo is deleted by ProteomeInfo 
 }
 
+void ProteinInfo::computeLabelFree()
+{
+	dTotalPeakHeight = 0;
+	dTotalPeakArea = 0;
+	iMS2SpectralCounts = 0;
+	for( unsigned int i = 0; i < vpPeptideInfo.size(); ++i )
+	{
+		if( !vpPeptideInfo[i]->getValidity() )
+			continue;
+		dTotalPeakHeight += vpPeptideInfo[i]->getPeakHeight();
+		dTotalPeakArea += vpPeptideInfo[i]->getPeakArea();
+		iMS2SpectralCounts += vpPeptideInfo[i]->getMS2Count();
+		++iQuantifiedPeptides;
+	}
+}
+
+
+
+
 bool ProteinInfo::setProteinRatio( ProteinRatio * pProteinRatioInput )
 {
 	vector< double > vdPeptideLog2Ratio;
@@ -28,7 +51,7 @@ bool ProteinInfo::setProteinRatio( ProteinRatio * pProteinRatioInput )
 
 	bValidity = true;
 
-	for( int i = 0; i < vpPeptideInfo.size(); ++i )
+	for( unsigned int i = 0; i < vpPeptideInfo.size(); ++i )
 	{
 		if( !vpPeptideInfo[i]->getValidity() )
 			continue;

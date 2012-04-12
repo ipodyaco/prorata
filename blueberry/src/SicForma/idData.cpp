@@ -25,7 +25,7 @@ bool IDdata::setFilename( string sFilename )
 	bool bSuccess;
 
 	// convert all letters to upper case
-	for( int i = 0; i < sIDfileType.length(); i++ )
+	for(unsigned int i = 0; i < sIDfileType.length(); i++ )
 		sIDfileType[i] = toupper(sIDfileType[i]);
 	
 	// select the function for the given file type
@@ -128,7 +128,7 @@ void IDdata::consolidateIDlist( MSdata *pMSdata )
 	// for all iterators that need to be deleted
 	// first free the memory and then erase the iterator from lpIDlist
 	// Deletions in list only invalidate iterators and references to the deleted elements. 
-	for( int i = 0; i< vIterDeletion.size(); ++i )
+	for(unsigned int i = 0; i< vIterDeletion.size(); ++i )
 	{
 		iter1 = vIterDeletion[i];
 		delete (*iter1);
@@ -177,7 +177,7 @@ void IDdata::showMeAll()
 	vector< MS2Scoring > vMS2Scoring;
 	vector< Protein > vProtein;
 	list< Identification * >::iterator iter;
-	int i;
+	unsigned int i;
 	logFile << " Totol Identification Number = " << lpIDlist.size () << endl;
 
 	// print out everything in lpIDlist
@@ -234,8 +234,8 @@ bool IDdata::isMS2Adjacent( Identification * pID0, Identification * pID1 )
 
 void IDdata::mergeID( Identification * pID0, Identification * pID1 )
 {
-	int i0;
-	int i1;
+	unsigned int i0;
+	unsigned int i1;
 	bool isMatched = false;
 
 	// merge Protein vector
@@ -296,7 +296,7 @@ void IDdata::setFirstAndLastMS2( Identification * pID )
 	int iLastMS2 = 0;
 	unsigned long int iFirstMS2ScanNumber = pID->vMS2Scoring[iFirstMS2].iMSMSscan;
 	unsigned long int iLastMS2ScanNumber = pID->vMS2Scoring[iLastMS2].iMSMSscan;
-	for( int i = 1; i < pID->vMS2Scoring.size(); ++i )
+	for(unsigned int i = 1; i < pID->vMS2Scoring.size(); ++i )
 	{
 		if( iFirstMS2ScanNumber > pID->vMS2Scoring[i].iMSMSscan )
 		{
@@ -322,7 +322,7 @@ void IDdata::setRetentionTime( MSdata *pMSdata )
 {
 	list< Identification * >::iterator iter;
 	
-	int i;
+	unsigned int i;
 	unsigned long int iScanNumber;
 	float fRetentionTime;
 	for( iter = lpIDlist.begin(); iter != lpIDlist.end(); iter++)

@@ -21,8 +21,10 @@ class ProteinInfo
 		ProteinInfo();
 		~ProteinInfo();
 		
+		void computeLabelFree();
+
 		bool setProteinRatio( ProteinRatio * pProteinRatioInput );
-		
+
 		void addPeptideInfo( PeptideInfo * pPeptideInfoInput );
 		
 		void setLocus( string sLocusInput );
@@ -43,17 +45,30 @@ class ProteinInfo
 		double getLowerLimitCI();
 		double getUpperLimitCI();
 		int getValidPeptides();
+
 		// this overloaded function is used in proteinReplicate
 		int getValidPeptides(double dLowerLimitCI, double dUpperLimitCI);
 		int getQuantifiedPeptides();
 		int getIdentifiedPeptides();
 		bool getValidity();
 
+		// accessors for label-free variables
+		double getTotalPeakHeight(){ return dTotalPeakHeight;};
+		double getTotalPeakArea(){ return dTotalPeakArea;};
+		int getMS2SpectralCounts(){ return iMS2SpectralCounts;};
+
 	private:
 		vector< PeptideInfo * > vpPeptideInfo;
 		bool bValidity;
 		string sLocus;
 		string sDescription;
+
+		// label free variables
+		double dTotalPeakHeight;
+		double dTotalPeakArea;
+		int iMS2SpectralCounts;
+
+		// metablic labeling variables
 		double dLog2Ratio;
 		double dLowerLimitCI;
 		double dUpperLimitCI;

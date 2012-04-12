@@ -126,7 +126,7 @@ bool Isotopologue::setupIsotopologue( const string & sName,  const string & sTab
 		
 	// the isotopic distribution is pushed into vAtomIsotopicDistribution in the order of
 	// natural CHONPS and then enriched CHONPS
-	for( i = 0; i < AtomName.size(); ++i )
+	for( i = 0; i < (int)AtomName.size(); ++i )
 	{
 		if( ! ProRataConfig::getAtomIsotopicComposition( 
 					AtomName[i],
@@ -177,7 +177,7 @@ bool Isotopologue::computeMZwindows( string sSequence, int iChargeState, MZwindo
 		return false;
 	}
 
-	int i = 0;
+	unsigned int i = 0;
 
 	// get the masses that passes the isotopic envelop cutoff
 	vector< double > vMassFiltered;
@@ -212,7 +212,7 @@ bool Isotopologue::computeMZwindows( string sSequence, int iChargeState, MZwindo
 	}
 
 	// merge overlaping m/z ranges in vPeakUpperMZ and vPeakLowerMZ
-	int j = 0;	
+	unsigned int j = 0;
 	for( i = 0; i < vPeakUpperMZ.size(); i++ )
 	{
 		// determine if this m/z range has been merged previously
@@ -305,7 +305,7 @@ bool Isotopologue::computeIsotopicDistribution( string sSequence , IsotopeDistri
 	}
 
 	// add up all residues's isotopic distribution
-	for( int j = 0; j < sSequence.length(); j++)
+	for( unsigned int j = 0; j < sSequence.length(); j++)
 	{
 		string currentResidue = sSequence.substr( j, 1 );
 		ResidueIter = vResidueIsotopicDistribution.find( currentResidue );
@@ -353,7 +353,7 @@ bool Isotopologue::computeProductIonMass( string sSequence, vector< double > & v
 		return false;
 	}
 	
-	for( int j = 0; j < sSequence.length(); j++)
+	for(unsigned int j = 0; j < sSequence.length(); j++)
 	{
 		string currentResidue = sSequence.substr( j, 1 );
 		ResidueIter = vResidueIsotopicDistribution.find( currentResidue );
@@ -467,7 +467,7 @@ bool Isotopologue::computeAtomicComposition( string sSequence, vector< int >  & 
 	}
 
 
-	for( int j = 0; j < sSequence.length(); j++)
+	for(unsigned int j = 0; j < sSequence.length(); j++)
 	{
 		string currentResidue = sSequence.substr( j, 1 );
 		ResidueIter = mResidueAtomicComposition.find( currentResidue );

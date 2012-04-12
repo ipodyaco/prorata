@@ -62,18 +62,37 @@ void ProteomeInfo::addPeptideInfo( PeptideInfo * pCurrentPeptideInfo )
 bool ProteomeInfo::processProteins()
 {
 	cout << " Calculating Protein Abundance Ratios ... " << endl;
-	int i;
+	unsigned int i;
 	int iCount = 0;
-	for( i = 0; i < vpProteinInfo.size(); ++i )
+	if(!ProRataConfig::getIsLabelFree())
 	{
-	//	cout << "processing " << vpProteinInfo[i]->getLocus() << endl;
-		ProteinRatio currentProteinRatio;
-		vpProteinInfo[i]->setProteinRatio( & currentProteinRatio );
-		// count how many invalid ProteinInfo
-		if( !vpProteinInfo[i]->getValidity() )
+		// calculate abundance ratios for metabolic labeling
+		for( i = 0; i < vpProteinInfo.size(); ++i )
 		{
-			++iCount;
+		//	cout << "processing " << vpProteinInfo[i]->getLocus() << endl;
+			ProteinRatio currentProteinRatio;
+			vpProteinInfo[i]->setProteinRatio( & currentProteinRatio );
+			// count how many invalid ProteinInfo
+			if( !vpProteinInfo[i]->getValidity() )
+			{
+				++iCount;
+			}
 		}
+	}
+	else
+	{
+		// perform label-free quantification
+		for( i = 0; i < vpProteinInfo.size(); ++i )
+		{
+		//	cout << "processing " << vpProteinInfo[i]->getLocus() << endl;
+			vpProteinInfo[i]->computeLabelFree();
+			// count how many invalid ProteinInfo
+			if( !vpProteinInfo[i]->getValidity() )
+			{
+				++iCount;
+			}
+		}
+
 	}
 
 	// erase those invalid ProteinInfo
@@ -857,42 +876,13 @@ vector< TiXmlElement * > ProteomeInfo::getElement(  TiXmlElement * pElement, con
 
 bool ProteomeInfo::writeFileTAB()
 {
-	int i;
-#ifdef DEBUG
-	// write a temp protein quantification result file
-	string sCompleteFilenameTemp = ProRataConfig::getWorkingDirectory() + "ProRata_Protein_Temp.txt";
-	ofstream fStreamTroTemp( sCompleteFilenameTemp.c_str() );
-	if( !fStreamTroTemp )
-	{
-		cout << "ERROR: cannot write the TRO file " << endl;
-		return false;
-	}
-
-	fStreamTroTemp << "Tab-delimited Table of Protein Quantification Results by ProRata v0.1" << endl;
-	fStreamTroTemp << "locus" << '\t' 
-		<< "log2ratio" << '\t'
-		<< "lowerCI" << '\t'
-		<< "upperCI" << '\t'
-		<< "quantified_peptides" << endl; 
-	sortProteinInfo( vpProteinInfo, "locus" );
-	for( i = 0; i < vpProteinInfo.size(); ++i )
-	{
-		fStreamTroTemp << vpProteinInfo[i]->getLocus() << '\t' 
-			<< vpProteinInfo[i]->getLog2Ratio() << '\t'
-			<< vpProteinInfo[i]->getLowerLimitCI() << '\t'
-			<< vpProteinInfo[i]->getUpperLimitCI() << '\t'
-			<< vpProteinInfo[i]->getQuantifiedPeptides()<< endl;
-	}
-	
-	fStreamTroTemp.close();	
-#endif
-	
+	unsigned int i;
 	// write the flat-file table for the protein quantification results
 	string sCompleteFilename = ProRataConfig::getWorkingDirectory() + "ProRata_Quantification_Protein.txt";
 	ofstream fStreamTro( sCompleteFilename.c_str() );
 	if( !fStreamTro )
 	{
-		cout << "ERROR: cannot write the TRO file " << endl;
+		cout << "ERROR: cannot write ProRata_Quantification_Protein.txt" << endl;
 		return false;
 	}
 
@@ -931,7 +921,7 @@ bool ProteomeInfo::writeFileTAB()
 	ofstream fStreamTep( sCompleteFilename.c_str()  );
 	if( !fStreamTep )
 	{
-		cout << "ERROR: cannot write the TEP file " << endl;
+		cout << "ERROR: cannot write ProRata_Quantification_Peptide.txt" << endl;
 		return false;
 	}
 
@@ -963,7 +953,7 @@ bool ProteomeInfo::writeFileTAB()
 			fStreamTep << vsLocus[k];
 			if( k != (vsLocus.size() - 1) )
 			{
-				fStreamTep << ", ";
+				fStreamTep << ",";
 			}
 				
 		}
@@ -973,5 +963,123 @@ bool ProteomeInfo::writeFileTAB()
 	fStreamTep.close();
 	return true;
 }
+
+
+bool ProteomeInfo::writeFileLabelFree()
+{
+	unsigned int i;
+	// write the flat-file table for the protein quantification results
+	string sCompleteFilename = ProRataConfig::getWorkingDirectory() + "ProRata_LabelFree_Quantification_Protein.txt";
+	ofstream fStreamTro( sCompleteFilename.c_str() );
+	if( !fStreamTro )
+	{
+		cout << "ERROR: cannot write ProRata_LabelFree_Quantification_Protein.txt " << endl;
+		return false;
+	}
+
+	fStreamTro << "Protein Quantification Results by ProRata " << ProRataConfig::getProRataVersion() <<  endl;
+	fStreamTro << "locus" << '\t' 
+		<< "totalPeakHeight" << '\t'
+		<< "totalPeakArea" << '\t'
+		<< "MS2Count" << '\t'
+		<< "quantified_peptides" << '\t'
+		<< "description" << endl;
+	sortProteinInfo( vpProteinInfo, "locus" );
+	for( i = 0; i < vpProteinInfo.size(); ++i )
+	{
+		fStreamTro << vpProteinInfo[i]->getLocus() << '\t' 
+			<< vpProteinInfo[i]->getTotalPeakHeight() << '\t'
+			<< vpProteinInfo[i]->getTotalPeakArea() << '\t'
+			<< vpProteinInfo[i]->getMS2SpectralCounts() << '\t'
+			<< vpProteinInfo[i]->getQuantifiedPeptides() << '\t'
+			<< vpProteinInfo[i]->getDescription() << endl;
+	}
+	
+	fStreamTro.close();
+
+	sCompleteFilename = ProRataConfig::getWorkingDirectory() +  "ProRata_LabelFree_Quantification_Peptide.txt";
+	// write the flat-file table for the peptide quantification results
+	ofstream fStreamTep( sCompleteFilename.c_str()  );
+	if( !fStreamTep )
+	{
+		cout << "ERROR: cannot write ProRata_LabelFree_Quantification_Peptide.txt" << endl;
+		return false;
+	}
+
+	fStreamTep << "Peptide Quantification Results by ProRata " << ProRataConfig::getProRataVersion() << endl;
+	fStreamTep << "XIC_filename" << '\t' 
+		<< "identifier" << '\t'
+		<< "peakHeight" << '\t'
+		<< "peakArea" << '\t'
+		<< "peakSNR" << '\t'
+		<< "peakWidth" << '\t'
+		<< "peakStartRT" << '\t'
+		<< "peakEndRT" << '\t'
+		<< "MS2Count" << '\t'
+		<< "MS2RT" << '\t'
+		<< "validity" << '\t'
+		<< "locus" << '\t'
+		<< "sequence" << '\t'
+		<< "charge" << '\t'
+		<< "IDs" << endl;
+	for( i = 0; i < vpPeptideInfo.size(); ++i )
+	{
+		// build MS2Time
+		stringstream ssMS2Time;
+		vector<float> vfMS2Time = vpPeptideInfo[i]->getMS2Time();	
+		for(int j = 0; j < vfMS2Time.size() - 1; ++j )
+		{
+			ssMS2Time << vfMS2Time[j] << ",";
+		}
+		ssMS2Time << vfMS2Time.back();
+
+		fStreamTep << vpPeptideInfo[i]->getFilename() << '\t' 
+			<< vpPeptideInfo[i]->getIdentifier() << '\t'
+			<< vpPeptideInfo[i]->getPeakHeight() << '\t'
+			<< vpPeptideInfo[i]->getPeakArea() << '\t'
+			<< vpPeptideInfo[i]->getPeakSNR() << '\t'
+			<< vpPeptideInfo[i]->getPeakTimeWidth() << '\t'
+			<< vpPeptideInfo[i]->getLeftValleyTime() << '\t'
+			<< vpPeptideInfo[i]->getRightValleyTime() << '\t'			
+			<< vpPeptideInfo[i]->getMS2Count() << '\t'
+			<< ssMS2Time.str() << '\t'
+			<< boolalpha << vpPeptideInfo[i]->getValidity() << '\t';
+		
+		// write Locus
+		vector< string > vsLocus = vpPeptideInfo[i]->getLocus();
+		for(int k = 0; k <  vsLocus.size(); k++ )
+		{
+			fStreamTep << vsLocus[k];
+			if( k != (vsLocus.size() - 1) )
+			{
+				fStreamTep << ",";
+			}
+				
+		}
+		fStreamTep << '\t' << vpPeptideInfo[i]->getSequence() ;
+		fStreamTep << '\t' << vpPeptideInfo[i]->getChargeState() << '\t';
+
+		vector<string> vsIDFilename = vpPeptideInfo[i]->getAllIDfilename();	
+		for(int j = 0; j < vsIDFilename.size() - 1; ++j )
+		{
+			fStreamTep << vsIDFilename[j] << ",";
+		}
+		fStreamTep << vsIDFilename.back() << endl;
+	}
+
+	fStreamTep.close();
+	return true;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 

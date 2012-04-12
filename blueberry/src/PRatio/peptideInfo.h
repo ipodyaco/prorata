@@ -6,12 +6,14 @@
 #include <iterator>
 #include <algorithm>
 #include "peptideRatio.h"
+#include "peptideLabelFree.h"
 #include "tinyxml.h"
 #include "chromatogram.h"
 
 using namespace std;
 
 class PeptideRatio;
+class PeptideLabelFree;
 
 class PeptideInfo
 {
@@ -19,15 +21,17 @@ class PeptideInfo
 		PeptideInfo();
 		~PeptideInfo();
 		
+		// set all the values 
 		void setValues( PeptideRatio * pPeptideRatio );
+		void setValues( PeptideLabelFree * pPeptideLabelFree );
+
+		// get and set functions for shared return variables between PeptideRatio and PeptideLabelFree
 		void setFilename( string sFilenameInput );
 		void setIdentifier( int iIdentifierInput );
 		void setSequence( string sSequenceInput );
 		void setChargeState( int iChargeStateInput );
 		void setMaximumScore( float fScoreInput );
 		void setValidity( bool bValidityInput );
-		void setPCALog2Ratio( double dPCALog2RatioInput );
-		void setPCALog2SNR( double dPCALog2SNRInput );
 		void setLocus( vector< string > vsLocusInput );
 
 		string getFilename();
@@ -36,22 +40,54 @@ class PeptideInfo
 		int getChargeState();
 		float getMaximumScore();
 		bool getValidity();
-		double getPCALog2Ratio();
-		double getPCALog2SNR();
 		const vector< string > & getLocus();
 		const vector< string > & getDescription();
-		
+
+		unsigned int getMS2Count() { return iMS2Count; };
+		float getPeakTimeWidth() { return fPeakTimeWidth;};
+		float getLeftValleyTime() { return fLeftValleyTime;};
+		float getRightValleyTime() { return fRightValleyTime;};
+		vector<float> getMS2Time() { return vfMS2Time;};
+		vector<string> getAllIDfilename() { return vsAllIDfilename; };
+
+		// get and set functions for return variables from PeptideRatio 
+		void setPCALog2Ratio( double dPCALog2RatioInput );
+		void setPCALog2SNR( double dPCALog2SNRInput );
+
+		double getPCALog2Ratio();
+		double getPCALog2SNR();
+
+		// get and set functions for return variables from PeptideLabelFree
+		double getPeakHeight(){return dPeakHeight;};
+		double getPeakArea(){return dPeakArea;};
+		double getPeakSNR(){return dPeakSNR;};
 	private:
+
+		// shared return variables between PeptideRatio and PeptideLabelFree
 		string sFilename;
 		int iIdentifier;
 		string sSequence;
 		int iChargeState;
 		float fMaximumScore;
 		bool bValidity;
-		double dPCALog2Ratio;
-		double dPCALog2SNR;
 		vector< string > vsLocus;
 		vector< string > vsDescription;
+		unsigned int iMS2Count;
+		float fPeakTimeWidth;
+		float fLeftValleyTime;
+		float fRightValleyTime;
+		vector<float> vfMS2Time;
+		vector<string> vsAllIDfilename;
+
+		// return variables from PeptideRatio 
+		double dPCALog2Ratio;
+		double dPCALog2SNR;
+
+		// return variables from PeptideLabelFree
+		double dPeakHeight;
+		double dPeakArea;
+		double dPeakSNR;
+
 };
 
 class LessPeptideInfo

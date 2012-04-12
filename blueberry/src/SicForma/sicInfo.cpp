@@ -118,13 +118,28 @@ bool SICinfo::process(vector< PeptideInfo * > & vpPeptideInfo)
 				chro.writeChroFile();
 			}
 			// calculate peptide ratio and populate vpPeptideInfo
-			PeptideRatio currentPeptideRatio;
-			if( currentPeptideRatio.process( chro ) )
+			if(!ProRataConfig::getIsLabelFree())
 			{
-				PeptideInfo * pCurrentPeptideInfo = new PeptideInfo;
-				pCurrentPeptideInfo->setFilename(  chro.getMSfilename() );
-				pCurrentPeptideInfo->setValues( &currentPeptideRatio );
-				vpPeptideInfo.push_back(pCurrentPeptideInfo);
+				// two isotopologues and normal abundance ratio calculation
+				PeptideRatio currentPeptideRatio;
+				if( currentPeptideRatio.process( chro ) )
+				{
+					PeptideInfo * pCurrentPeptideInfo = new PeptideInfo;
+					pCurrentPeptideInfo->setFilename(  chro.getMSfilename() );
+					pCurrentPeptideInfo->setValues( &currentPeptideRatio );
+					vpPeptideInfo.push_back(pCurrentPeptideInfo);
+				}
+			}
+			else{
+				// there is only one isotopologue and calculate peptideLabelFree
+				PeptideLabelFree currentPeptideLabelFree;
+				if( currentPeptideLabelFree.process( chro ) )
+				{
+					PeptideInfo * pCurrentPeptideInfo = new PeptideInfo;
+					pCurrentPeptideInfo->setFilename(  chro.getMSfilename() );
+					pCurrentPeptideInfo->setValues( &currentPeptideLabelFree );
+					vpPeptideInfo.push_back(pCurrentPeptideInfo);
+				}
 			}
 		}
 

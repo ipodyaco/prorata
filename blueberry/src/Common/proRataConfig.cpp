@@ -4,6 +4,7 @@
 string ProRataConfig::sFilename = "ProRataConfig.xml";
 
 bool ProRataConfig::bIfWriteChro = false;
+bool ProRataConfig::bIsLabelFree = false;
 
 #if _WIN32
 	string ProRataConfig::sWorkingDirectory = ".\\";
@@ -82,6 +83,7 @@ bool ProRataConfig::setFilename( const string & sConfigFileName )
 	}
 
 	proRataConfigSingleton->getParameters( txdConfigFile );
+	proRataConfigSingleton->setIsLabelFree();	
 	// If everything goes fine return 0.
 	return true;
 
@@ -287,11 +289,27 @@ bool ProRataConfig::getResidueAtomicComposition(residueMap & mIsotopologue)
 		}
 		
 	}
+
+	
 			
 	return true;
 
 }
 
+void ProRataConfig::setIsLabelFree()
+{
+	residueMap mIsotopologue;
+	if(!getResidueAtomicComposition(mIsotopologue)){
+		bIsLabelFree = false;
+	}
+
+	if(mIsotopologue.size() == 1){
+		bIsLabelFree = true;
+	}
+	else{
+		bIsLabelFree = false;
+	}
+}
 
 void ProRataConfig::getParameters( TiXmlDocument & txdConfigFile )
 {
