@@ -26,24 +26,24 @@ ProjectInfo::~ProjectInfo()
 bool ProjectInfo::process( string sProRataCombineXMLfilename )
 {
 	
-	cout << "start setup templateProteinCombined .. " << endl; // DEBUG	
+	cout << "Setting up a protein template .. " << endl; // DEBUG
 	if( !setupTemplateProteinCombined( sProRataCombineXMLfilename ) )
 	{
 		cout << "ERROR: there are some problem with ProRataCombine.xml!" << endl;
 		return false;
 	}
 	
-	cout << "start compileLocusList .. " << endl; // DEBUG	
+	cout << "Compiling a locus list .. " << endl; // DEBUG
 	if( !compileLocusList() )
 	{
 		cout << "ERROR: cannot creat a list of locuses from the QPR files!" << endl;
 		return false;
 	}
 
-	cout << "start runQuantification .. " << endl; // DEBUG	
+	cout << "Start quantification .. " << endl; // DEBUG
 	for( int i = 0; i < vsLocusList.size(); ++i )
 	{
-		cout << "Running quantification for locus " << vsLocusList[i] << endl;
+		cout << "Analyzing locus " << vsLocusList[i] << "\r";
 		// creat new ProteinCombined instances from templateProteinCombined using copy constructor
 		ProteinCombined * pCurrentProteinCombined = new ProteinCombined( templateProteinCombined );
 		if( !pCurrentProteinCombined->runQuantification( vsLocusList[i], vsDescriptionList[i] ) )
@@ -52,6 +52,7 @@ bool ProjectInfo::process( string sProRataCombineXMLfilename )
 		}
 		vpProteinCombined.push_back( pCurrentProteinCombined );
 	}
+	cout << endl;
 
 	LessProteinCombined lessProteinCombinedSort( "locus" );
 	sort( vpProteinCombined.begin(), vpProteinCombined.end(), lessProteinCombinedSort );

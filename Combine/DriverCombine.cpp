@@ -40,7 +40,7 @@ int main( int argc, char * argv[] )
 
 	mainProjectInfo.writeFileTAB( sTABOutputFilename );
 
-	cout << "ProRataCombine Done." << endl;
+	cout << "ProRata Combine Done." << endl;
 	
 
 	return 0;
