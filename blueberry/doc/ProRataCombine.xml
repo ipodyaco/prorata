@@ -9,28 +9,44 @@
 		</CONFIG>
 		<DIRECT_COMPARISON>
 			<NAME> CouSuc </NAME>
-			<NUMERATOR>Coumarte</NUMERATOR>
-			<DENOMINATOR>Succinate</DENOMINATOR>
+			<NUMERATOR>coumarate</NUMERATOR>
+			<DENOMINATOR>succinate</DENOMINATOR>
 			<REPLIPCATE>
 				<NAME>Rep1</NAME>
-				<QPR_FILE>D:\Research_G\Coumarate\N14N15_CouSuc_LTQ\CouSuc_Mix1_LTQ\ProRata_Quantification.qpr.xml</QPR_FILE>
+				<NORMALIZATION>
+					<METHOD>Median</METHOD>
+					<VALUE>0</VALUE>
+				</NORMALIZATION>	
+				<QPR_FILE>E:\Research\ProRata_2.0\sequoia_test\Combine\CouSuc_Mix1_LTQ\ProRata_Quantification.qpr.xml</QPR_FILE>
 			</REPLIPCATE> 
 			<REPLIPCATE>
 				<NAME>Rep2</NAME>
-				<QPR_FILE>D:\Research_G\Coumarate\N14N15_CouSuc_LTQ\CouSuc_Mix2_LTQ\ProRata_Quantification.qpr.xml</QPR_FILE>
+				<NORMALIZATION>
+					<METHOD>Median</METHOD>
+					<VALUE>0</VALUE>
+				</NORMALIZATION>	
+				<QPR_FILE>E:\Research\ProRata_2.0\sequoia_test\Combine\CouSuc_Mix2_LTQ\ProRata_Quantification.qpr.xml</QPR_FILE>
 			</REPLIPCATE> 
 		</DIRECT_COMPARISON>
 		<DIRECT_COMPARISON>
 			<NAME> CouBen </NAME>
-			<NUMERATOR>Coumarte</NUMERATOR>
-			<DENOMINATOR>Benzoate</DENOMINATOR>
+			<NUMERATOR>coumarate</NUMERATOR>
+			<DENOMINATOR>benzoate</DENOMINATOR>
 			<REPLIPCATE>
 				<NAME>Rep1</NAME>
-				<QPR_FILE>D:\Research_G\Coumarate\N14N15_CouBen_LTQ\CouBen_Mix1_LTQ\ProRata_Quantification.qpr.xml</QPR_FILE>
+				<NORMALIZATION>
+					<METHOD>Median</METHOD>
+					<VALUE>0</VALUE>
+				</NORMALIZATION>	
+				<QPR_FILE>E:\Research\ProRata_2.0\sequoia_test\Combine\CouBen_Mix1_LTQ\ProRata_Quantification.qpr.xml</QPR_FILE>
 			</REPLIPCATE> 
 			<REPLIPCATE>
 				<NAME>Rep2</NAME>
-				<QPR_FILE>D:\Research_G\Coumarate\N14N15_CouBen_LTQ\CouBen_Mix2_LTQ\ProRata_Quantification.qpr.xml</QPR_FILE>
+				<NORMALIZATION>
+					<METHOD>Median</METHOD>
+					<VALUE>0</VALUE>
+				</NORMALIZATION>	
+				<QPR_FILE>E:\Research\ProRata_2.0\sequoia_test\Combine\CouBen_Mix2_LTQ\ProRata_Quantification.qpr.xml</QPR_FILE>
 			</REPLIPCATE> 
 		</DIRECT_COMPARISON>
 	</COMBINE_REPLICATES>
@@ -43,8 +59,8 @@
 			<NAME>	BenSuc	</NAME>
 			<DIRECT_COMPARISON_NAME_A>	CouSuc	</DIRECT_COMPARISON_NAME_A> 
 			<DIRECT_COMPARISON_NAME_B>	CouBen	</DIRECT_COMPARISON_NAME_B> 
-			<NUMERATOR>	Benzoate	</NUMERATOR>
-			<DENOMINATOR>	Succinate	</DENOMINATOR>
+			<NUMERATOR>	benzoate	</NUMERATOR>
+			<DENOMINATOR>	succinate	</DENOMINATOR>
 		</INDIRECT_COMPARISON>
 	</COMBINE_DIRECT_COMPARISONS>
 </PRORATA_COMBINE>

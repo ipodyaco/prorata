@@ -14,6 +14,7 @@ bool ProRataConfig::bIsLabelFree = false;
 
 // variables from the SIC_EXTRACTION element
 string ProRataConfig::sIDFileType = "DTASelect";
+string ProRataConfig::sFASTAFilename = "";
 float ProRataConfig::fMinutesBeforeMS2 = 2;
 float ProRataConfig::fMinutesAfterMS2 = 2;
 float ProRataConfig::fMinutesBetweenMS2 = 0.5;
@@ -311,6 +312,7 @@ void ProRataConfig::setIsLabelFree()
 	}
 }
 
+
 void ProRataConfig::getParameters( TiXmlDocument & txdConfigFile )
 {
 
@@ -451,11 +453,38 @@ void ProRataConfig::getParameters( TiXmlDocument & txdConfigFile )
 	issStream.str( sTemp );
 	issStream >> iMinPeptideNumber;
 
+	vsTagList[2] = "FASTA_FILE";
+	sFASTAFilename = getValue( txdConfigFile, vsTagList );
+	
+	vsTagList[2] = "LOG2_RATIO_DISCRETIZATION";
+	sTemp =  getValue( txdConfigFile, vsTagList );
+	issStream.clear();
+	issStream.str( sTemp );
+	issStream >> dLog2RatioDiscretization;
+
+	vsTagList[2] = "SMOOTHING_PROBABILITY_SPACE";
+	sTemp =  getValue( txdConfigFile, vsTagList );
+	issStream.clear();
+	issStream.str( sTemp );
+	issStream >> dSmoothingProbSpace;
+
+	vsTagList[2] = "LN_LIKELIHOOD_CUTOFF_OFFSET";
+	sTemp =  getValue( txdConfigFile, vsTagList );
+	issStream.clear();
+	issStream.str( sTemp );
+	issStream >> dLnLikelihoodCutoffOffset;
+	
 	vsTagList[2] = "MAX_CI_WIDTH";
 	sTemp =  getValue( txdConfigFile, vsTagList );
 	issStream.clear();
 	issStream.str( sTemp );
 	issStream >> dMaxCIwidth;
+	
+	vsTagList[2] = "MAX_LOG2_SNR";
+	sTemp =  getValue( txdConfigFile, vsTagList );
+	issStream.clear();
+	issStream.str( sTemp );
+	issStream >> dMaxLog2SNR;	
 	
 	vsTagList[2] = "LOG2_RATIO";
 	vsTagList.push_back( "MINIMUM" );
@@ -469,6 +498,32 @@ void ProRataConfig::getParameters( TiXmlDocument & txdConfigFile )
 	issStream.clear();
 	issStream.str( sTemp );
 	issStream >> dMLEMaxLog2Ratio;	
+
+	vsTagList[2] = "STANDARD_DEVIATION";
+	vsTagList[3] = "SLOPE";
+	sTemp =  getValue( txdConfigFile, vsTagList );
+	issStream.clear();
+	issStream.str( sTemp );
+	issStream >> dSDSlope;
+
+	vsTagList[3] = "INTERCEPT";
+	sTemp =  getValue( txdConfigFile, vsTagList );
+	issStream.clear();
+	issStream.str( sTemp );
+	issStream >> dSDIntercept;
+
+	vsTagList[2] = "MEAN";
+	vsTagList[3] = "SLOPE";
+	sTemp =  getValue( txdConfigFile, vsTagList );
+	issStream.clear();
+	issStream.str( sTemp );
+	issStream >> dMeanSlope;
+
+	vsTagList[3] = "INTERCEPT";
+	sTemp =  getValue( txdConfigFile, vsTagList );
+	issStream.clear();
+	issStream.str( sTemp );
+	issStream >> dMeanIntercept;
 
 }
 

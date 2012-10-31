@@ -54,6 +54,10 @@ class ProRataConfig
 		static string	getIDfileType()				{ return sIDFileType; }
 		static void	setIDfileType(string input)		{ sIDFileType = input; }
 		
+		// retrieve <FASTA_FILE>
+		static string	getFASTAfilename()			{ return sFASTAFilename; }
+		static void	setFASTAfilename(string input)		{ sFASTAFilename = input; }
+		
 		// retrieve <RETENTION_TIME_INTERVAL> <MINUTES_BEFORE_MS2>
 		static float	getMinutesBeforeMS2()			{ return fMinutesBeforeMS2; }
 		static void	setMinutesBeforeMS2(float input)	{ fMinutesBeforeMS2 = input; }
@@ -133,12 +137,6 @@ class ProRataConfig
 		// retrieve <LOG2_RATIO> <MAXIMUM>
 		static double	getPCAMaxLog2Ratio()			{ return dPCAMaxLog2Ratio; }
 		static void	setPCAMaxLog2Ratio(double input)	{ dPCAMaxLog2Ratio = input; }
-
-		// retrieve <LOG2_SNR> <MINIMUM>
-		static double	getMinLog2SNR()				{ return dMinLog2SNR; }
-		static void	setMinLog2SNR(double input)	{ dMinLog2SNR = input; }
-
-
 	
 		/* 
 		 * the get functions for protein quantification
@@ -157,8 +155,13 @@ class ProRataConfig
 		static double	getMaxCIwidth()				{ return dMaxCIwidth; }
 		static void	setMaxCIwidth(double input)		{ dMaxCIwidth = input; }
 		
+		// retrieve <LOG2_SNR> <MINIMUM>
+		static double	getMinLog2SNR()				{ return dMinLog2SNR; }
+		static void	setMinLog2SNR(double input)		{ dMinLog2SNR = input; }
+
 		// retrieve <LOG2_SNR> <MAXIMUM>
 		static double	getMaxLog2SNR()				{ return dMaxLog2SNR; }
+		static void	setMaxLog2SNR(double input)		{ dMaxLog2SNR = input; }
 
 		// retrieve <LOG2_RATIO> <MINIMUM>
 		static double	getMLEMinLog2Ratio()			{ return dMLEMinLog2Ratio; }
@@ -174,21 +177,27 @@ class ProRataConfig
 
 		// retrieve <STANDARD_DEVIATION> <SLOPE>
 		static double	getSDSlope()				{ return dSDSlope; }
+		static void	setSDSlope(double input)		{ dSDSlope = input; }
 
 		// retrieve <STANDARD_DEVIATION> <INTERCEPT>
 		static double	getSDIntercept()			{ return dSDIntercept; }
+		static void	setSDIntercept(double input)		{ dSDIntercept = input; }
 		
 		// retrieve <MEAN> <SLOPE>
 		static double	getMeanSlope()				{ return dMeanSlope; }
+		static void	setMeanSlope(double input)		{ dMeanSlope = input; }
 		
 		// retrieve <MEAN> <INTERCEPT>
 		static double	getMeanIntercept()			{ return dMeanIntercept; }
+		static void	setMeanIntercept(double input)		{ dMeanIntercept = input; }
 			
 		// retrieve <SMOOTHING_PROBABILITY_SPACE>
 		static double	getSmoothingProbilitySpace()		{ return dSmoothingProbSpace; }
+		static void	setSmoothingProbilitySpace(double input)	{ dSmoothingProbSpace = input; }
 
 		// retrieve <LN_LIKELIHOOD_CUTOFF_OFFSET>
 		static double	getLnLikelihoodCutoffOffset()		{ return dLnLikelihoodCutoffOffset; }
+		static void	setLnLikelihoodCutoffOffset(double input)	{ dLnLikelihoodCutoffOffset = input; }
 
 		// write the CONFIG to a file with the tab depth of iTabDepth
 		// the booleans for each element controls which element to be written to the file
@@ -229,6 +238,7 @@ class ProRataConfig
 		// variables from the SIC_EXTRACTION element
 		static string sMSFileType;
 		static string sIDFileType;
+		static string sFASTAFilename;
 		static float fMinutesBeforeMS2;
 		static float fMinutesAfterMS2;
 		static float fMinutesBetweenMS2;
