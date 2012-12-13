@@ -9,30 +9,9 @@
 #include <list>
 #include "chromatogram.h"
 #include "idData.h"
-
-#define CSTRING_SIZE 256
-
+#include "tokenvector.h"
 
 using namespace std;
-
-// enumerate the line types in a DTASelect-filter file
-enum LineType
-{
-	// a peptide line
-	peptideLine,
-
-	// a protein line
-	proteinLine,
-
-	// the line proceeding the peptide/protein lines
-	startLine,
-
-	// the line trailing the peptide/protein lines
-	endLine,
-
-	// the unknown line
-	unknownLine
-};
 
 class DTASelectReader
 {
@@ -48,16 +27,11 @@ class DTASelectReader
 		bool getIDlist( string sFilename, list< Identification* > & lpIDlist );
 
 	private:
-
-		// process a protein line and save the info into vProtein
-		bool processProteinLine( string sLine, vector< Protein > & vProtein );
-
 		// process a peptide line and save the info into pID
-		bool processPeptideLine( string sLine, const vector< Protein > & vProtein, Identification * pID );
+		bool processPeptideLine( string sLine, Identification * pID );
 
-		// determine the line type of the current line
-		LineType whatIsThisLine( string sLine );
-		
+		// find the number of the field that matches the targetWord
+		bool findField(const TokenVector & words, string targetWord, unsigned int & iFieldNumber);
 
 };
 

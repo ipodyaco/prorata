@@ -581,17 +581,12 @@ IsotopeDistribution Isotopologue::multiply( IsotopeDistribution distribution0, i
 
 void Isotopologue::formatSequence( string & sSequence )
 {
-	int iLength = sSequence.length();
-	// check if this sequence is of the format X.XXXX.X
-	// its minimum length is 5
-	if(iLength > 4 )
+	string::size_type positionN = sSequence.find( "[", 0 ) ;
+	string::size_type positionC = sSequence.find( "]", 0 ) ;
+	if(positionN != string::npos && positionC != string::npos)
 	{
-		// its second residues from both the left side and the right side should be '.'
-		if( sSequence[1] == '.' && sSequence[ ( iLength - 2 ) ] == '.')
-		{
-			// if so, extract the sequence between '.'
-			sSequence = sSequence.substr( 2, (iLength - 4) );
-		}
+		// extract ABC from peptide N[ABC]E
+		sSequence = sSequence.substr(positionN+1, positionC - positionN - 1);
 	}
 }
 	

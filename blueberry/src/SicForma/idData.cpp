@@ -20,28 +20,12 @@ IDdata::~IDdata()
 
 bool IDdata::setFilename( string sFilename )
 {
-	string sIDfileType;
-	sIDfileType = ProRataConfig::getIDfileType();
 	bool bSuccess;
 
-	// convert all letters to upper case
-	for(unsigned int i = 0; i < sIDfileType.length(); i++ )
-		sIDfileType[i] = toupper(sIDfileType[i]);
-	
-	// select the function for the given file type
-	// and populate the ID list
-	if( sIDfileType == "DTASELECT" )
-	{	
-		// pass the lpIDlist reference to DTASelectReader
-		// and allow DTASelectReader to populate it
-		DTASelectReader reader;
-		bSuccess = reader.getIDlist( sFilename, lpIDlist );	
-	}
-	else
-	{
-		cout << "The given ID file type, " << sFilename << ", cannot be recognized or is not supported!" << endl;
-		bSuccess = false;
-	}
+	// pass the lpIDlist reference to DTASelectReader
+	// and allow DTASelectReader to populate it
+	DTASelectReader reader;
+	bSuccess = reader.getIDlist( sFilename, lpIDlist );
 
 	// set the iFirstMS2 and iLastMS2 in each Identification
 	list< Identification * >::iterator iter;

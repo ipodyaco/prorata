@@ -4,7 +4,7 @@ SICinfo::SICinfo()
 {
 	vpIsotopologue.clear();
 	vsMZfilename.clear();
-	sIDfilename = "DTASelect-filter.txt";
+	sIDfilename = "pro2psm.txt";
 	
 }
 

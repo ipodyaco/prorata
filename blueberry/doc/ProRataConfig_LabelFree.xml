@@ -49,7 +49,7 @@
 		</ATOM_ISOTOPIC_COMPOSITION>
 
 		<RESIDUE_ATOMIC_COMPOSITION>
-			<ISOTOPOLOGUE name = "treatment" >
+			<ISOTOPOLOGUE name = "label_free" >
 				<!--	Name	C	H	O	N	P	S	C*	H*	O*	N*	P*	S*	-->
 				<R>	NTerm,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0	</R>
 				<R>	CTerm,	0,	1,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0	</R>
@@ -74,31 +74,6 @@
 				<R>	C,	3,	5,	1,	1,	0,	1,	0,	0,	0,	0,	0,	0	</R>
 				<R>	W,	11,	10,	1,	2,	0,	0,	0,	0,	0,	0,	0,	0	</R>
 			</ISOTOPOLOGUE>
-			<ISOTOPOLOGUE name = "reference" >
-				<!--	Name	C	H	O	N	P	S	C*	H*	O*	N*	P*	S*	-->
-				<R>	NTerm,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0	</R>	
-				<R>	CTerm,	0,	1,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0	</R>  
-				<R>	L,	6,	11,	1,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	A,	3,	5,	1,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	S,	3,	5,	2,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	G,	2,	3,	1,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	V,	5,	9,	1,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	E,	5,	7,	3,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	K,	6,	12,	1,	0,	0,	0,	0,	0,	0,	2,	0,	0	</R>	
-				<R>	I,	6,	11,	1,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	T,	4,	7,	2,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	D,	4,	5,	3,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	R,	6,	12,	1,	0,	0,	0,	0,	0,	0,	4,	0,	0	</R>	
-				<R>	P,	5,	7,	1,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	N,	4,	6,	2,	0,	0,	0,	0,	0,	0,	2,	0,	0	</R>	
-				<R>	F,	9,	9,	1,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	Q,	5,	8,	2,	0,	0,	0,	0,	0,	0,	2,	0,	0	</R>	
-				<R>	Y,	9,	9,	2,	0,	0,	0,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	M,	5,	9,	1,	0,	0,	1,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	H,	6,	7,	1,	0,	0,	0,	0,	0,	0,	3,	0,	0	</R>	
-				<R>	C,	3,	5,	1,	0,	0,	1,	0,	0,	0,	1,	0,	0	</R>	
-				<R>	W,	11,	10,	1,	0,	0,	0,	0,	0,	0,	2,	0,	0	</R>	
-			</ISOTOPOLOGUE>
 		</RESIDUE_ATOMIC_COMPOSITION>	
 	</SIC_EXTRACTION>
 	
@@ -113,37 +88,7 @@
 				<RIGHT>    0      </RIGHT>
 			</PEAK_SHIFT>
 		</PEAK_DETECTION>
-		<ABUNDANCE_RATIO>
-			<NUMERATOR_ISOTOPOLOGUE>	treatment	</NUMERATOR_ISOTOPOLOGUE>
-			<DENOMINATOR_ISOTOPOLOGUE>	reference	</DENOMINATOR_ISOTOPOLOGUE>
-		</ABUNDANCE_RATIO>
-		<LOG2_RATIO> 
-			<MINIMUM>	-10	</MINIMUM>
-			<MAXIMUM>	10	</MAXIMUM>
-		</LOG2_RATIO>     
-		<LOG2_SNR_CUTOFF>	1	</LOG2_SNR_CUTOFF>  
 		<REMOVE_AMBIGUOUS_PEPTIDES>	true	</REMOVE_AMBIGUOUS_PEPTIDES>
 	</PEPTIDE_QUANTIFICATION>
-
-	<PROTEIN_QUANTIFICATION>
-		<MIN_PEPTIDE_NUMBER>	2	</MIN_PEPTIDE_NUMBER>
-		<MAX_CI_WIDTH>		5	</MAX_CI_WIDTH>
-		<MAX_LOG2_SNR>		4	</MAX_LOG2_SNR>  
-		<LOG2_RATIO> 
-			<MINIMUM>	-5	</MINIMUM>
-			<MAXIMUM>	5	</MAXIMUM>
-		</LOG2_RATIO>  	
-		<LOG2_RATIO_DISCRETIZATION>	0.1	</LOG2_RATIO_DISCRETIZATION>
-		<STANDARD_DEVIATION>	
-			<SLOPE>	-0.288	</SLOPE>   
-			<INTERCEPT> 1.305	</INTERCEPT> 
-		</STANDARD_DEVIATION>
-		<MEAN>
-			<SLOPE>	1.2	</SLOPE>    
-			<INTERCEPT>	0	</INTERCEPT>
-		</MEAN>
-		<SMOOTHING_PROBABILITY_SPACE>	0.15    </SMOOTHING_PROBABILITY_SPACE>   
-		<LN_LIKELIHOOD_CUTOFF_OFFSET>	1.96	</LN_LIKELIHOOD_CUTOFF_OFFSET>
-	</PROTEIN_QUANTIFICATION>
 </CONFIG>
 

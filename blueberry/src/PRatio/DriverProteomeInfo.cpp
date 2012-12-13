@@ -31,7 +31,7 @@ int main( int argc, char * argv[] )
 			  cout << "If --chro is provided, chromatograms will be written to chro files" << endl;
 			  cout << "-w Default: default WorkingDirectory is the current directory; " << endl;
 			  cout << "-c Default: default ConfigurationFile is ProRataConfig.xml in WorkingDirectory" << endl;
-			  cout << "-i Default: default IdentificationFile is DTASelect-filter.txt in WorkingDirectory" << endl;
+			  cout << "-i Default: default IdentificationFile is a single pro2psm.txt file in WorkingDirectory" << endl;
 			  exit(0);
 	    }
 	    else { 
@@ -55,7 +55,18 @@ int main( int argc, char * argv[] )
 	}
 
 	if(sIDFilename == ""){
-		sIDFilename = sWorkingDirectory + "DTASelect-filter.txt";
+		DirectoryStructure dirStructure( sWorkingDirectory.substr( 0, (sWorkingDirectory.length() - 1) )  );
+		vector<string> vsPro2PSMfilename;
+		dirStructure.setPattern( "pro2psm.txt" );
+		dirStructure.getFiles( vsPro2PSMfilename );
+		if( vsPro2PSMfilename.size() == 1 ){
+			sIDFilename = sWorkingDirectory + vsPro2PSMfilename[0];
+		}
+		else{
+			cout << "Error: please provide an .pro2psm.txt file with the -i option." << endl;
+			return 0;
+		}
+
 	}
 
 	// Load configuration file.

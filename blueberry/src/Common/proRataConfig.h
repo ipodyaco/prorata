@@ -50,14 +50,6 @@ class ProRataConfig
 		 * <SIC_EXTRACTION>
 		 */ 
 		
-		// retrieve <ID_FILE_TYPE>
-		static string	getIDfileType()				{ return sIDFileType; }
-		static void	setIDfileType(string input)		{ sIDFileType = input; }
-		
-		// retrieve <FASTA_FILE>
-		static string	getFASTAfilename()			{ return sFASTAFilename; }
-		static void	setFASTAfilename(string input)		{ sFASTAFilename = input; }
-		
 		// retrieve <RETENTION_TIME_INTERVAL> <MINUTES_BEFORE_MS2>
 		static float	getMinutesBeforeMS2()			{ return fMinutesBeforeMS2; }
 		static void	setMinutesBeforeMS2(float input)	{ fMinutesBeforeMS2 = input; }
@@ -236,9 +228,6 @@ class ProRataConfig
 		static void replaceDelimitor( string & sLine, char cOldDelimitor, char cNewDelimitor );
 
 		// variables from the SIC_EXTRACTION element
-		static string sMSFileType;
-		static string sIDFileType;
-		static string sFASTAFilename;
 		static float fMinutesBeforeMS2;
 		static float fMinutesAfterMS2;
 		static float fMinutesBetweenMS2;

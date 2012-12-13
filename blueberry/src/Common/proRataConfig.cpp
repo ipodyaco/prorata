@@ -13,8 +13,6 @@ bool ProRataConfig::bIsLabelFree = false;
 #endif
 
 // variables from the SIC_EXTRACTION element
-string ProRataConfig::sIDFileType = "DTASelect";
-string ProRataConfig::sFASTAFilename = "";
 float ProRataConfig::fMinutesBeforeMS2 = 2;
 float ProRataConfig::fMinutesAfterMS2 = 2;
 float ProRataConfig::fMinutesBetweenMS2 = 0.5;
@@ -263,21 +261,37 @@ bool ProRataConfig::getResidueAtomicComposition(residueMap & mIsotopologue)
 		for( txnTable = txnTemp->FirstChild("R"); txnTable; txnTable = txnTable->NextSibling("R") )
 		{
 			txsText =  txnTable->FirstChild()->ToText();
-			sTable.append( txsText->Value() );
+			string sResidueLine = txsText->Value();
+
+			string symbolName;
+			string symbol;
+			size_t position;
+
+			// if the XML reserved characters, & and <, are used to represent PTMs in the peptide,
+			// they can specified as amp and lt in the config file
+			// here they will be changed back to symbols
+
+			// replace amp with &
+			symbolName = "amp";
+			symbol = "&";
+			position = sResidueLine.find(symbolName);
+			if( position != std::string::npos )
+				sResidueLine.replace(position, symbolName.length(), symbol);
+
+			// replace lt with <
+			symbolName = "lt";
+			symbol = "<";
+			position = sResidueLine.find(symbolName);
+			if( position != std::string::npos )
+				sResidueLine.replace(position, symbolName.length(), symbol);
+
+			sTable.append( sResidueLine );
 			sTable.append( "\n" );
-				
-			/*
-			// get the type of the node
-			if( txnTable->Type() == 4 )
-			{
-				// cast the node to a TEXT node
-				txsText = txnTable->ToText();
-				// get the value of the TEXT node and append it to sTable
-				sTable.append( txnTable->Value() );
-			}
-			*/
 		}
 		replaceDelimitor( sTable, ',', '\t' );
+
+//		cout << "Config Residue Table" << endl;
+//		cout << sTable << endl;
 
 		// points txeElement to the ISOTOPOLOGUE element 
 		txeElement = txnTemp->ToElement();
@@ -333,8 +347,7 @@ void ProRataConfig::getParameters( TiXmlDocument & txdConfigFile )
 	vsTagList.clear();
 	vsTagList.push_back( sMainTag );
 	vsTagList.push_back( sModuleTag );
-	vsTagList.push_back( "ID_FILE_TYPE" );
-	sIDFileType = getValue( txdConfigFile, vsTagList );
+	vsTagList.push_back( "" );
 	
 	vsTagList[2] = "RETENTION_TIME_INTERVAL";
 	vsTagList.push_back( "MINUTES_BEFORE_MS2" );
@@ -453,9 +466,6 @@ void ProRataConfig::getParameters( TiXmlDocument & txdConfigFile )
 	issStream.str( sTemp );
 	issStream >> iMinPeptideNumber;
 
-	vsTagList[2] = "FASTA_FILE";
-	sFASTAFilename = getValue( txdConfigFile, vsTagList );
-	
 	vsTagList[2] = "LOG2_RATIO_DISCRETIZATION";
 	sTemp =  getValue( txdConfigFile, vsTagList );
 	issStream.clear();
@@ -560,8 +570,7 @@ string ProRataConfig::getValue( TiXmlDocument &txdDoc,
 	// check if this element exists
 	if ( ! txnTemp )
 	{
-		cout << "ERROR: TAG\"" << (*itrTagListItr) << 
-			"\" not found in the configuration file." << endl;
+	//	cout << "ERROR: TAG \"" << (*itrTagListItr) << "\" not found in the configuration file." << endl;
 		return string("");
 	}
 
@@ -575,8 +584,7 @@ string ProRataConfig::getValue( TiXmlDocument &txdDoc,
 
 		if ( ! txnTemp )
 		{
-			cout << "ERROR: TAG\"" << (*itrTagListItr) << 
-				"\" not found in the configuration file." << endl;
+		//	cout << "ERROR: TAG \"" << (*itrTagListItr) << "\" not found in the configuration file." << endl;
 			return string("");
 		}
 
