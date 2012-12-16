@@ -581,12 +581,20 @@ IsotopeDistribution Isotopologue::multiply( IsotopeDistribution distribution0, i
 
 void Isotopologue::formatSequence( string & sSequence )
 {
+	string sNewSequence;
 	string::size_type positionN = sSequence.find( "[", 0 ) ;
 	string::size_type positionC = sSequence.find( "]", 0 ) ;
 	if(positionN != string::npos && positionC != string::npos)
 	{
 		// extract ABC from peptide N[ABC]E
-		sSequence = sSequence.substr(positionN+1, positionC - positionN - 1);
+		sNewSequence = sSequence.substr(positionN+1, positionC - positionN - 1);
+		// get a possible PTM symbol after the C terminus
+		positionC++;
+		if(positionC != string::npos && positionC < sSequence.length() && !isalpha(sSequence[positionC]) && !isspace(sSequence[positionC]))
+		{
+			sNewSequence.append(sSequence.substr(positionC, 1));
+		}
+		sSequence = sNewSequence;
 	}
 }
 	

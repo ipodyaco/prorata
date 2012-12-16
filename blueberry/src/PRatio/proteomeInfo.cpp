@@ -212,9 +212,9 @@ void ProteomeInfo::sortPeptideInfoDescending( vector< PeptideInfo * > & vpPeptid
 	reverse( vpPeptideInfoInput.begin(), vpPeptideInfoInput.end() );	
 }	
 
-bool ProteomeInfo::writeFileQPR()
+bool ProteomeInfo::writeFileQPR( string sRunBaseName )
 {
-	string sFilename = ProRataConfig::getWorkingDirectory() + "ProRata_Quantification.qpr.xml";
+	string sFilename = ProRataConfig::getWorkingDirectory() + sRunBaseName + ".ProRata.xml";
 	FILE * pFileInitial;
 	if( ( pFileInitial = fopen( sFilename.c_str(), "w" ) ) == NULL  ) 
 	{
@@ -874,15 +874,15 @@ vector< TiXmlElement * > ProteomeInfo::getElement(  TiXmlElement * pElement, con
 	return vpElementVector;
 }
 
-bool ProteomeInfo::writeFileTAB()
+bool ProteomeInfo::writeFileTAB( string sRunBaseName )
 {
 	unsigned int i;
 	// write the flat-file table for the protein quantification results
-	string sCompleteFilename = ProRataConfig::getWorkingDirectory() + "ProRata_Quantification_Protein.txt";
+	string sCompleteFilename = ProRataConfig::getWorkingDirectory() + sRunBaseName + ".ProRata_Protein.txt";
 	ofstream fStreamTro( sCompleteFilename.c_str() );
 	if( !fStreamTro )
 	{
-		cout << "ERROR: cannot write ProRata_Quantification_Protein.txt" << endl;
+		cout << "ERROR: cannot write " << sCompleteFilename << endl;
 		return false;
 	}
 
@@ -916,12 +916,12 @@ bool ProteomeInfo::writeFileTAB()
 	
 	fStreamTro.close();
 
-	sCompleteFilename = ProRataConfig::getWorkingDirectory() +  "ProRata_Quantification_Peptide.txt";
+	sCompleteFilename = ProRataConfig::getWorkingDirectory() + sRunBaseName + ".ProRata_Peptide.txt";
 	// write the flat-file table for the peptide quantification results
 	ofstream fStreamTep( sCompleteFilename.c_str()  );
 	if( !fStreamTep )
 	{
-		cout << "ERROR: cannot write ProRata_Quantification_Peptide.txt" << endl;
+		cout << "ERROR: cannot write " << sCompleteFilename << endl;
 		return false;
 	}
 
@@ -965,15 +965,15 @@ bool ProteomeInfo::writeFileTAB()
 }
 
 
-bool ProteomeInfo::writeFileLabelFree()
+bool ProteomeInfo::writeFileLabelFree( string sRunBaseName )
 {
 	unsigned int i;
 	// write the flat-file table for the protein quantification results
-	string sCompleteFilename = ProRataConfig::getWorkingDirectory() + "ProRata_LabelFree_Quantification_Protein.txt";
+	string sCompleteFilename = ProRataConfig::getWorkingDirectory() + sRunBaseName + ".ProRata_LabelFree_Protein.txt";
 	ofstream fStreamTro( sCompleteFilename.c_str() );
 	if( !fStreamTro )
 	{
-		cout << "ERROR: cannot write ProRata_LabelFree_Quantification_Protein.txt " << endl;
+		cout << "ERROR: cannot write " << sCompleteFilename << endl;
 		return false;
 	}
 
@@ -997,12 +997,12 @@ bool ProteomeInfo::writeFileLabelFree()
 	
 	fStreamTro.close();
 
-	sCompleteFilename = ProRataConfig::getWorkingDirectory() +  "ProRata_LabelFree_Quantification_Peptide.txt";
+	sCompleteFilename = ProRataConfig::getWorkingDirectory() + sRunBaseName + ".ProRata_LabelFree_Peptide.txt";
 	// write the flat-file table for the peptide quantification results
 	ofstream fStreamTep( sCompleteFilename.c_str()  );
 	if( !fStreamTep )
 	{
-		cout << "ERROR: cannot write ProRata_LabelFree_Quantification_Peptide.txt" << endl;
+		cout << "ERROR: cannot write " << sCompleteFilename << endl;
 		return false;
 	}
 

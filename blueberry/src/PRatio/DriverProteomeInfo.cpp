@@ -44,11 +44,8 @@ int main( int argc, char * argv[] )
 	if(sWorkingDirectory == ""){
 		sWorkingDirectory = ".";
 	}
-#ifdef _WIN32
-	sWorkingDirectory = sWorkingDirectory + "\\";
-#else
-	sWorkingDirectory = sWorkingDirectory + "/";
-#endif
+
+	sWorkingDirectory = sWorkingDirectory + ProRataConfig::getSeparator();
 
 	if(sConfigFilename == ""){
 		sConfigFilename = sWorkingDirectory + "ProRataConfig.xml";
@@ -66,8 +63,28 @@ int main( int argc, char * argv[] )
 			cout << "Error: please provide an .pro2psm.txt file with the -i option." << endl;
 			return 0;
 		}
-
 	}
+	else{
+		// determine if path is provided in the sIDFilename.
+		// If no, use working directory.
+		size_t found;
+		found = sIDFilename.find(ProRataConfig::getSeparator());
+		if(found == string::npos){
+			sIDFilename = sWorkingDirectory + sIDFilename;
+		}
+	}
+
+	string sRunBaseName = "ProRata_Quantification";
+	size_t separatorFound = sIDFilename.find_last_of(ProRataConfig::getSeparator());
+	size_t extensionFound = sIDFilename.find_last_of(".pro2psm.txt");
+	if(separatorFound != string::npos && extensionFound != string::npos ){
+		// the length of ".pro2psm.txt" is 12
+		if( extensionFound - separatorFound > 13  )
+		{
+			sRunBaseName = sIDFilename.substr(separatorFound + 1, extensionFound - separatorFound - 12 );
+		}
+	}
+//	cout << "sRunBaseName " << sRunBaseName << endl;
 
 	// Load configuration file.
 	cout << "Reading config file: " << sConfigFilename << endl;
@@ -89,12 +106,12 @@ int main( int argc, char * argv[] )
 
 	if(!ProRataConfig::getIsLabelFree())
 	{
-		mainProteomeInfo.writeFileQPR();
-		mainProteomeInfo.writeFileTAB();
+		mainProteomeInfo.writeFileQPR(sRunBaseName);
+		mainProteomeInfo.writeFileTAB(sRunBaseName);
 	}
 	else
 	{
-		mainProteomeInfo.writeFileLabelFree();
+		mainProteomeInfo.writeFileLabelFree(sRunBaseName);
 	}
 
 	cout << "Quantification completed!" << endl;

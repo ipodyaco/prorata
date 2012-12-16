@@ -37,9 +37,9 @@ class ProteomeInfo
 		bool processProteins();
 
 		bool readFileQPR( string sFilename );
-		bool writeFileQPR();
-		bool writeFileTAB();
-		bool writeFileLabelFree();
+		bool writeFileQPR( string sRunBaseName );
+		bool writeFileTAB( string sRunBaseName );
+		bool writeFileLabelFree( string sRunBaseName );
 
 		bool getProteinRatio( ProteinInfo * queryProteinInfo, ProteinRatio * queryProteinRatio );
 
