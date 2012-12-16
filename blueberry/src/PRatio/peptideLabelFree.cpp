@@ -150,7 +150,7 @@ bool PeptideLabelFree::quantifyWithPeak()
 	// Find the size of the valley.
 	int iPeakWidth = iRightValley - iLeftValley + 1;
 	
-	unsigned int i;
+	int i;
 
 	// get the peak intensities within a peak
 	vector<double> vdReferenceIntensity;	

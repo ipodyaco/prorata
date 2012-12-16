@@ -57,7 +57,7 @@ void DirectoryStructure::getFiles( vector<string> & vsList )
 {
 	vsList.clear();
 //	copy( vsFileList.begin(), vsFileList.end(), vsList.begin() );
-	for( int i = 0; i < vsFileList.size(); ++i)
+	for(unsigned int i = 0; i < vsFileList.size(); ++i)
 		vsList.push_back( vsFileList[i] );
 }
 

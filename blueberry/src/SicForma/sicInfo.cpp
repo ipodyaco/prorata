@@ -39,8 +39,8 @@ bool SICinfo::setFilename( string sIDfilenameInput )
 		}
 	}
 
-	int i;
-	int j;
+	unsigned int i;
+	unsigned int j;
 	// check if the mzFilenames are unique from each other
 	// any filename cannot be a substring of any other filename
 	// this is because mzFilename is used to group IDs in DTASelect-filter
@@ -67,8 +67,8 @@ bool SICinfo::setFilename( string sIDfilenameInput )
 
 bool SICinfo::process(vector< PeptideInfo * > & vpPeptideInfo)
 {
-	int i;
-	int j;
+	unsigned int i;
+	unsigned int j;
 	for( i = 0; i < vpPeptideInfo.size(); i++)
 		delete vpPeptideInfo[i];
 	vpPeptideInfo.clear();
@@ -149,7 +149,7 @@ bool SICinfo::process(vector< PeptideInfo * > & vpPeptideInfo)
 
 	// free memory
 	delete pIDdata;
-	for( int k = 0; k < vpIsotopologue.size(); ++k)
+	for( unsigned int k = 0; k < vpIsotopologue.size(); ++k)
 		delete vpIsotopologue[k];
 	return true;
 }
@@ -180,7 +180,7 @@ bool SICinfo::extractChromatogram( const Identification & idInput, string sMSfil
 
 	// calculate the m/z windows for SIC
 	vector< SIC > vSIC;
-	for( int i = 0; i < vpIsotopologue.size(); ++i )
+	for(unsigned int i = 0; i < vpIsotopologue.size(); ++i )
 	{
 		SIC currentSIC;
 		currentSIC.sName = vpIsotopologue[i]->getName();

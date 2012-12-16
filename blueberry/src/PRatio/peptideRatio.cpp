@@ -241,7 +241,7 @@ bool PeptideRatio::quantifyWithPCA()
 	double dRatioUpperBound = pow( (double)2, ProRataConfig::getPCAMaxLog2Ratio() );
 	double dRatioLowerBound = pow( (double)2, ProRataConfig::getPCAMinLog2Ratio() );
 
-	int iEigenValueCount = chroPCA.getNumberOfEigenValues();
+//	int iEigenValueCount = chroPCA.getNumberOfEigenValues();
 	vector<double> vdEigenValues;
 	vector<double> vdEigenVectors;
 	vdEigenValues = chroPCA.getEigenValues();

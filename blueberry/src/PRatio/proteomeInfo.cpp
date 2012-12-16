@@ -8,10 +8,10 @@ ProteomeInfo::ProteomeInfo()
 
 ProteomeInfo::~ProteomeInfo()
 {
-	for( int i = 0; i < vpProteinInfo.size(); ++i )
+	for( unsigned int i = 0; i < vpProteinInfo.size(); ++i )
 		delete vpProteinInfo[i];
 
-	for( int j = 0; j < vpPeptideInfo.size(); ++j )
+	for( unsigned int j = 0; j < vpPeptideInfo.size(); ++j )
 		delete vpPeptideInfo[j];
 }
 
@@ -21,7 +21,7 @@ bool ProteomeInfo::processPeptidesXIC(string sIDFilename)
 	sicInfo.setFilename( sIDFilename );
 	sicInfo.process( vpPeptideInfo);
 
-	for( int i = 0; i < vpPeptideInfo.size(); i++ )
+	for( unsigned int i = 0; i < vpPeptideInfo.size(); i++ )
 	{
 		addPeptideInfo( vpPeptideInfo[i] );
 	}
@@ -35,7 +35,7 @@ void ProteomeInfo::addPeptideInfo( PeptideInfo * pCurrentPeptideInfo )
 	bool bIsNewLocus = true;
 	int iLocusNumber = vsLocus.size();
 	int i;
-	int j;
+	unsigned int j;
 	for( i = 0; i < iLocusNumber; ++i )
 	{
 		bIsNewLocus = true;
@@ -128,7 +128,7 @@ vector< ProteinInfo * > ProteomeInfo::getProteinInfo( string sKeyword )
 	string::size_type positionDescription;
 
 	vector< ProteinInfo * > vpProteinInfoOutput;	
-	int i;
+	unsigned int i;
 	for( i = 0; i < vpProteinInfo.size(); ++i )
 	{
 		positionLocus = vpProteinInfo[i]->getLocus().find( sKeyword );
@@ -150,7 +150,7 @@ vector< ProteinInfo * > ProteomeInfo::getProteinInfo4Locus( string sLocus )
 	if( sLocus == "" )
 		return vpProteinInfoOutput;
 
-	int i;
+	unsigned int i;
 	for( i = 0; i < vpProteinInfo.size(); ++i )
 	{
 		if( sLocus == vpProteinInfo[i]->getLocus() )
@@ -165,7 +165,7 @@ vector< ProteinInfo * > ProteomeInfo::getProteinInfo4Locus( string sLocus )
 void ProteomeInfo::getLocusList( vector< string > & vsLocusListRef )
 {
 	vsLocusListRef.clear();
-	int i;
+	unsigned int i;
 	for( i = 0; i < vpProteinInfo.size(); ++i )
 	{
 		vsLocusListRef.push_back( vpProteinInfo[i]->getLocus() );
@@ -177,7 +177,7 @@ void ProteomeInfo::getLocusDescriptionList( vector< string > & vsLocusListRef , 
 {
 	vsLocusListRef.clear();
 	vsDescriptionRef.clear();
-	int i;
+	unsigned int i;
 	for( i = 0; i < vpProteinInfo.size(); ++i )
 	{
 		vsLocusListRef.push_back( vpProteinInfo[i]->getLocus() );
@@ -244,9 +244,9 @@ bool ProteomeInfo::writeFileQPR( string sRunBaseName )
 		return false;
 	}
 	
-	int i;
-	int j;
-	int k;
+	unsigned int i;
+	unsigned int j;
+	unsigned int k;
 
 	// sort the vpProteinInfo by their locus before writing to the file
 	sortProteinInfo( vpProteinInfo, "locus" );

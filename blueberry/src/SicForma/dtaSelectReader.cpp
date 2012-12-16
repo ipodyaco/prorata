@@ -24,7 +24,6 @@ list< Identification * > DTASelectReader::getIDlist( string sFilename )
 bool DTASelectReader::getIDlist( string sFilename, list< Identification * > & lpIDlist )
 {
 	string sCurrentLine;
-	unsigned int i;
 
 	map<string, Identification *> mapScan2ID;
 	map<string, Identification *>::iterator mapIterScan2ID;
