@@ -9,7 +9,7 @@ ProjectInfo::ProjectInfo()
 
 ProjectInfo::~ProjectInfo()
 {
-	int i;
+	unsigned int i;
 	for(i = 0; i < vpProteomeInfo.size(); ++i )
 	{
 		delete vpProteomeInfo[i];
@@ -41,7 +41,7 @@ bool ProjectInfo::process( string sProRataCombineXMLfilename )
 	}
 
 	cout << "Start quantification .. " << endl; // DEBUG
-	for( int i = 0; i < vsLocusList.size(); ++i )
+	for( unsigned int i = 0; i < vsLocusList.size(); ++i )
 	{
 		cout << "Analyzing locus " << vsLocusList[i] << "\r";
 		// creat new ProteinCombined instances from templateProteinCombined using copy constructor
@@ -82,9 +82,9 @@ bool ProjectInfo::writeFileTAB( string sTabFilename )
 	vCurrentDirectComparison = templateProteinCombined.getProteinDirectComparisonVector();
 	vCurrentIndirectComparison.clear();
 	vCurrentIndirectComparison = templateProteinCombined.getProteinIndirectComparisonVector();
-	int i;
-	int j;
-	int k;
+	unsigned int i;
+	unsigned int j;
+	unsigned int k;
 	
 	// print the configurations
 
@@ -258,12 +258,14 @@ bool ProjectInfo::writeFileTAB( string sTabFilename )
 		}
 	}
 	fStreamTro.close();
+	return true;
 }
 
 bool ProjectInfo::writeFileXML( string sXMLFilename )
 {
 	cout << "Called to cread XML file " << sXMLFilename << endl;
 	cout << "To be implemented! " << endl;
+	return true;
 }
 
 bool ProjectInfo::compileLocusList( )
@@ -273,9 +275,9 @@ bool ProjectInfo::compileLocusList( )
 	vector< string > vsCurrentLocusList;
 	vector< string > vsCurrentDescriptionList;
 
-	int i = 0;
-	int j = 0;
-	int k = 0;
+	unsigned int i = 0;
+	unsigned int j = 0;
+	unsigned int k = 0;
 	bool bPresent = false;
 	for( i = 0; i < vpProteomeInfo.size(); ++i )
 	{
@@ -322,6 +324,7 @@ bool ProjectInfo::compileLocusList( )
 		}
 	}
 
+	return true;
 }
 
 bool ProjectInfo::setupTemplateProteinCombined( string sProRataCombineXMLfilename )
