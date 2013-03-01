@@ -2,7 +2,7 @@
 #include <string>
 #include <cstdlib>
 
-
+#include "readmatrix.h"
 
 using namespace std;
 
