@@ -25,7 +25,7 @@ public:
     void InitializeParser( const string & sMatrixFileName );
 
     template <class  ValueType>
-    bool GetNextMatrix(vector< vector< ValueType  > > & vvMatrix);
+    bool GetNextMatrix(std::vector< std::vector< ValueType  > > & vvMatrix);
     void EndParser();
 
 private:
@@ -33,7 +33,7 @@ private:
     string sLastLine; //the content of the lastLine
 
     template <class  ValueType>
-    vector<ValueType> ReadRowValues( vector< ValueType  > vZeroVector, const string &  sCurrentLine);
+    std::vector<ValueType> ReadRowValues( std::vector< ValueType  > vZeroVector, const string &  sCurrentLine);
 
     template <class  NumberType>
     void TransferStrToValue(const string sVal, NumberType & realValue);

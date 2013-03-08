@@ -21,7 +21,7 @@ using namespace std;
 // just with some added useful methods that duplicate
 // common PERL parsing functions.
 
-class TokenVector : public vector <string>
+class TokenVector : public std::vector <string>
 {
 	
 public:
