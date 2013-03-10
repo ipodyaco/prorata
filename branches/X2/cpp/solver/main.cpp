@@ -61,10 +61,10 @@ bool GetNextCase(ReadMatrix & myReadMatrix, std::vector< std::vector<int> > & vv
     return bSuccess;
 }
 
-void SolveCurrentCase(const std::vector< std::vector<int> > & vvEMatrix, const std::vector< std::vector<double> > & vvSMatrix)
+void SolveCurrentCase(int PathNum,  const std::vector< std::vector<int> > & vvEMatrix, const std::vector< std::vector<double> > & vvSMatrix)
 {
     WindowsErrorPopupBlocker();
-    SmartPtr<MyTMINLP> tminlp = new MyTMINLP; 
+    SmartPtr<MyTMINLP> tminlp = new MyTMINLP(PathNum, vvEMatrix, vvSMatrix); 
 #ifdef REDIRECT
     FILE * fp = fopen("log.out","w");
     CoinMessageHandler handler(fp);
@@ -125,7 +125,8 @@ void SolveCurrentCase(const std::vector< std::vector<int> > & vvEMatrix, const s
         std::cerr<<E.className()<<"::"<<E.methodName()
                   <<std::endl
                   <<E.message()<<std::endl;
-    }  
+    } 
+
 }
 
 int main(int argc, char **argv) 
@@ -136,7 +137,7 @@ int main(int argc, char **argv)
     myReadMatrix.InitializeParser("test/testM.txt");
     if (GetNextCase(myReadMatrix, vvEMatrix, vvSMatrix))
     {
-        SolveCurrentCase(vvEMatrix, vvSMatrix);
+        SolveCurrentCase(2, vvEMatrix, vvSMatrix);
     }
     else
         myReadMatrix.EndParser();
