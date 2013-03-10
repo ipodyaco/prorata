@@ -9,6 +9,20 @@
 #include "MyTMINLP.hpp"
 #include "BonAmplInterface.hpp"
 
+MyTMINLP::MyTMINLP(int PathNum, const std::vector< std::vector<int> > & vvEMatrix, const std::vector< std::vector<double> > & vvSMatrix) : printSol_(false)
+{
+    iNumberPath      = PathNum;
+    vvCurrentEMatrix = vvEMatrix;
+    vvCurrentSMatrix = vvSMatrix;
+    iNumberVertice    = (int) vvCurrentEMatrix.size();
+    if (iNumberVertice != (int) vvCurrentSMatrix.size())
+    {
+        cerr<<"sizes of matrix don't match!"<<endl;
+        exit(1);
+    }
+    iNumberVariables = iNumberPath * iNumberVertice;
+}
+
 bool 
 MyTMINLP::get_variables_types(Index n, VariableType* var_types)
 {

@@ -9,8 +9,15 @@
 #ifndef MyTNLP_HPP
 #define MyTNLP_HPP
 #include "BonTMINLP.hpp"
+
+#include <stdlib.h>
+
 using namespace  Ipopt;
 using namespace Bonmin;
+
+using namespace std;
+
+
 /** A C++ example for interfacing an MINLP with bonmin.
    * This class implements the following NLP :
   * \f[ 
@@ -28,17 +35,21 @@ using namespace Bonmin;
 class MyTMINLP : public TMINLP
 {
 public:
+    std::vector< std::vector<int> >  vvCurrentEMatrix;
+    std::vector< std::vector<double> >  vvCurrentSMatrix;
+    int iNumberPath, iNumberVertice, iNumberVariables;
+    //wyf constructor.
+    MyTMINLP(int PathNum, const std::vector< std::vector<int> > & vvEMatrix, const std::vector< std::vector<double> > & vvSMatrix);
+
   /// Default constructor.
-  MyTMINLP():
-printSol_(false){}
+    MyTMINLP(): printSol_(false){}
   
   /// virtual destructor.
-  virtual ~MyTMINLP(){}
+    virtual ~MyTMINLP(){}
 
   
 	/** Copy constructor.*/   
-  MyTMINLP(const MyTMINLP &other):
-printSol_(other.printSol_){}
+    MyTMINLP(const MyTMINLP &other): printSol_(other.printSol_){}
   /** Assignment operator. no data = nothing to assign*/
   //MyTMINLP& operator=(const MyTMINLP&) {}
 
@@ -49,16 +60,16 @@ printSol_(other.printSol_){}
      \param n size of var_types (has to be equal to the number of variables in the problem)
   \param var_types types of the variables (has to be filled by function).
   */
-  virtual bool get_variables_types(Index n, VariableType* var_types);
+    virtual bool get_variables_types(Index n, VariableType* var_types);
  
   /** Pass info about linear and nonlinear variables.*/
-  virtual bool get_variables_linearity(Index n, Ipopt::TNLP::LinearityType* var_types);
+    virtual bool get_variables_linearity(Index n, Ipopt::TNLP::LinearityType* var_types);
 
   /** Pass the type of the constraints (LINEAR, NON_LINEAR) to the optimizer.
   \param m size of const_types (has to be equal to the number of constraints in the problem)
   \param const_types types of the constraints (has to be filled by function).
   */
-  virtual bool get_constraints_linearity(Index m, Ipopt::TNLP::LinearityType* const_types);
+    virtual bool get_constraints_linearity(Index m, Ipopt::TNLP::LinearityType* const_types);
 //@}  
     
   /** \name Overloaded functions defining a TNLP.
@@ -73,7 +84,7 @@ printSol_(other.printSol_){}
         \param index_style indicate wether arrays are numbered from 0 (C-style) or
         from 1 (Fortran).
         \return true in case of success.*/
-  virtual bool get_nlp_info(Index& n, Index&m, Index& nnz_jac_g,
+    virtual bool get_nlp_info(Index& n, Index&m, Index& nnz_jac_g,
                             Index& nnz_h_lag, TNLP::IndexStyleEnum& index_style);
   
   /** Method to pass the bounds on variables and constraints to Ipopt. 
@@ -84,7 +95,7 @@ printSol_(other.printSol_){}
        \param g_l lower bounds of the constraints (function should fill it).
        \param g_u upper bounds of the constraints (function should fill it).
   \return true in case of success.*/
-  virtual bool get_bounds_info(Index n, Number* x_l, Number* x_u,
+    virtual bool get_bounds_info(Index n, Number* x_l, Number* x_u,
                                Index m, Number* g_l, Number* g_u);
   
   /** Method to to pass the starting point for optimization to Ipopt.
@@ -94,7 +105,7 @@ printSol_(other.printSol_){}
     \param init_lambda do we initialize duals of constraints? 
     \param lambda lower bounds of the constraints (function should fill it).
     \return true in case of success.*/
-  virtual bool get_starting_point(Index n, bool init_x, Number* x,
+    virtual bool get_starting_point(Index n, bool init_x, Number* x,
                                   bool init_z, Number* z_L, Number* z_U,
                                   Index m, bool init_lambda,
                                   Number* lambda);
@@ -106,7 +117,7 @@ printSol_(other.printSol_){}
     (in the present context we don't care).
     \param obj_value value of objective in x (has to be computed by the function).
     \return true in case of success.*/
-  virtual bool eval_f(Index n, const Number* x, bool new_x, Number& obj_value);
+    virtual bool eval_f(Index n, const Number* x, bool new_x, Number& obj_value);
 
   /** Method which compute the gradient of the objective at a point x.
     \param n size of array x (has to be the number of variables in the problem).
@@ -115,7 +126,7 @@ printSol_(other.printSol_){}
     (in the present context we don't care).
     \param grad_f gradient of objective taken in x (function has to fill it).
     \return true in case of success.*/
-  virtual bool eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f);
+    virtual bool eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f);
 
   /** Method which compute the value of the functions defining the constraints at a point
     x.
@@ -126,7 +137,7 @@ printSol_(other.printSol_){}
     \param m size of array g (has to be equal to the number of constraints in the problem)
     \param grad_f values of the constraints (function has to fill it).
     \return true in case of success.*/
-  virtual bool eval_g(Index n, const Number* x, bool new_x, Index m, Number* g);
+    virtual bool eval_g(Index n, const Number* x, bool new_x, Index m, Number* g);
 
   /** Method to compute the Jacobian of the functions defining the constraints.
     If the parameter values==NULL fill the arrays iCol and jRow which store the position of
@@ -139,7 +150,7 @@ printSol_(other.printSol_){}
     \param m size of array g (has to be equal to the number of constraints in the problem)
     \param grad_f values of the constraints (function has to fill it).
     \return true in case of success.*/
-  virtual bool eval_jac_g(Index n, const Number* x, bool new_x,
+    virtual bool eval_jac_g(Index n, const Number* x, bool new_x,
                           Index m, Index nele_jac, Index* iRow, Index *jCol,
                           Number* values);
   
@@ -154,27 +165,26 @@ printSol_(other.printSol_){}
     \param m size of array g (has to be equal to the number of constraints in the problem)
     \param grad_f values of the constraints (function has to fill it).
     \return true in case of success.*/
-  virtual bool eval_h(Index n, const Number* x, bool new_x,
+    virtual bool eval_h(Index n, const Number* x, bool new_x,
                       Number obj_factor, Index m, const Number* lambda,
                       bool new_lambda, Index nele_hess, Index* iRow,
                       Index* jCol, Number* values);
 
   
   /** Method called by Ipopt at the end of optimization.*/  
-  virtual void finalize_solution(TMINLP::SolverReturn status,
+    virtual void finalize_solution(TMINLP::SolverReturn status,
                                  Index n, const Number* x, Number obj_value);
   
   //@}
 
-  virtual const SosInfo * sosConstraints() const{return NULL;}
-  virtual const BranchingInfo* branchingInfo() const{return NULL;}
+    virtual const SosInfo * sosConstraints() const{return NULL;}
+    virtual const BranchingInfo* branchingInfo() const{return NULL;}
   
   
-  void printSolutionAtEndOfAlgorithm(){
-    printSol_ = true;}
+    void printSolutionAtEndOfAlgorithm(){printSol_ = true;}
   
 private:
-   bool printSol_;
+    bool printSol_;
 };
 
 #endif
