@@ -11,59 +11,81 @@
 
 MyTMINLP::MyTMINLP(int PathNum, const std::vector< std::vector<int> > & vvEMatrix, const std::vector< std::vector<double> > & vvSMatrix) : printSol_(false)
 {
-    iNumberPath      = PathNum;
-    vvCurrentEMatrix = vvEMatrix;
+    iNumberPath      = PathNum;  // m in draft
+    vvCurrentEMatrix = vvEMatrix; 
     vvCurrentSMatrix = vvSMatrix;
-    iNumberVertice    = (int) vvCurrentEMatrix.size();
+    iNumberVertice    = (int) vvCurrentEMatrix.size(); // n in draft
     if (iNumberVertice != (int) vvCurrentSMatrix.size())
     {
         cerr<<"sizes of matrix don't match!"<<endl;
         exit(1);
     }
-    iNumberVariables = iNumberPath * iNumberVertice;
+    iNumberVariables = iNumberPath * iNumberVertice; // mn in draft
 }
 
 bool 
 MyTMINLP::get_variables_types(Index n, VariableType* var_types)
 {
-  var_types[0] = BINARY;
-  var_types[1] = CONTINUOUS;
-  var_types[2] = CONTINUOUS;
-  var_types[3] = INTEGER;
-  return true;
+    int i;
+    for (i=0; i < iNumberVariables; i++)
+        var_types[i] = BINARY;
+    return true;
+  //var_types[0] = BINARY;
+  //var_types[1] = CONTINUOUS;
+  //var_types[2] = CONTINUOUS;
+  //var_types[3] = INTEGER;
+  //return true;
 }
 
 
 bool 
 MyTMINLP::get_variables_linearity(Index n, Ipopt::TNLP::LinearityType* var_types)
 {
-  var_types[0] = Ipopt::TNLP::LINEAR;
-  var_types[1] = Ipopt::TNLP::NON_LINEAR;
-  var_types[2] = Ipopt::TNLP::NON_LINEAR;
-  var_types[3] = Ipopt::TNLP::LINEAR;
-  return true;
+    int i;
+    for (i=0; i < iNumberVariables; i++)
+        var_types[i] = Ipopt::TNLP::NON_LINEAR;
+    return true;
+  //var_types[0] = Ipopt::TNLP::LINEAR;
+  //var_types[1] = Ipopt::TNLP::NON_LINEAR;
+  //var_types[2] = Ipopt::TNLP::NON_LINEAR;
+  //var_types[3] = Ipopt::TNLP::LINEAR;
+  //return true;
 }
 
 
 bool 
 MyTMINLP::get_constraints_linearity(Index m, Ipopt::TNLP::LinearityType* const_types)
 {
-  assert (m==3);
-  const_types[0] = Ipopt::TNLP::NON_LINEAR;
-  const_types[1] = Ipopt::TNLP::LINEAR;
-  const_types[2] = Ipopt::TNLP::LINEAR;
-  return true;
+    assert(m==iNumberVertice-2+2*iNumberVariables-2*iNumberPath);
+    int i;
+    for (i=0; i<iNumberVertice-2; i++)
+        const_types[i] = Ipopt::TNLP::LINEAR;
+    for (i=iNumberVertice-2; i< iNumberVertice-2+2*iNumberVariables-2*iNumberPath; i++)
+        const_types[i] = Ipopt::TNLP::NON_LINEAR;
+
+    return true;
+  //assert (m==3);
+  //const_types[0] = Ipopt::TNLP::NON_LINEAR;
+  //const_types[1] = Ipopt::TNLP::LINEAR;
+  //const_types[2] = Ipopt::TNLP::LINEAR;
+  //return true;
 }
 bool 
 MyTMINLP::get_nlp_info(Index& n, Index&m, Index& nnz_jac_g,
                        Index& nnz_h_lag, TNLP::IndexStyleEnum& index_style)
 {
-  n = 4;//number of variable
-  m = 3;//number of constraints
-  nnz_jac_g = 7;//number of non zeroes in Jacobian
-  nnz_h_lag = 2;//number of non zeroes in Hessian of Lagrangean
-  index_style = TNLP::FORTRAN_STYLE;
-  return true;
+    n = iNumberVariables;
+    m = iNumberVertice-2+2*iNumberVariables-2*iNumberPath;
+    nnz_jac_g = 2*iNumberVariables*iNumberVertice - iNumberVariables - 2*iNumberPath;
+    nnz_h_lag = (iNumberVariables+1)*iNumberVariables/2;
+    index_style = Ipopt::TNLP::C_STYLE;
+    return true;
+//  n = 4;//number of variable
+//  m = 3;//number of constraints
+//  nnz_jac_g = 7;//number of non zeroes in Jacobian
+//  nnz_h_lag = 2;//number of non zeroes in Hessian of Lagrangean
+//  index_style = TNLP::FORTRAN_STYLE;
+//  return true;
 }
 
 bool 
