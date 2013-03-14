@@ -70,7 +70,7 @@ MyTMINLP::get_nlp_info(Index& n, Index&m, Index& nnz_jac_g,
     n = iNumberVariables;
     m = iNumberVertice-2+2*iNumberVariables-2*iNumberPath;
     nnz_jac_g = 2*iNumberVariables*iNumberVertice - iNumberVariables - 2*iNumberPath;
-    nnz_h_lag = (iNumberVariables+1)*iNumberVariables/2;
+    nnz_h_lag = iNumberVariables*(iNumberVertice+1)/2;
     index_style = Ipopt::TNLP::C_STYLE;
     return true;
 //  n = 4;//number of variable
@@ -202,10 +202,7 @@ MyTMINLP::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
             grad_f[iXIndex] = 0;
             for (k=0; k<iNumberVertice; k++)
             {
-                if (k != j)
-                    grad_f[iXIndex] = grad_f[iXIndex] - vvCurrentSMatrix[j][k] * x[i*iNumberVertice+k];
-                else
-                    grad_f[iXIndex] = grad_f[iXIndex] - 2 * vvCurrentSMatrix[j][j] * x[iXIndex];
+                grad_f[iXIndex] = grad_f[iXIndex] - 2 * vvCurrentSMatrix[j][k] * x[i*iNumberVertice+k];
             }
         }
 
@@ -282,7 +279,7 @@ MyTMINLP::eval_jac_g(Index n, const Number* x, bool new_x,
                 for (k=0; k<iNumberVertice; k++)
                 {
                     iRow[iEleNumber] = iNumberVertice-2 + i*(iNumberVertice-1)+j;
-                    iCol[iEleNumber] = i*iNumberVertice + k;
+                    jCol[iEleNumber] = i*iNumberVertice + k;
                     iEleNumber++;
                 }
         for (i=0; i<iNumberPath; i++)
@@ -290,9 +287,10 @@ MyTMINLP::eval_jac_g(Index n, const Number* x, bool new_x,
                 for (k=0; k<iNumberVertice; k++)
                 {
                     iRow[iEleNumber] = iNumberVertice-2 + iNumberPath*(iNumberVertice-1) + i*(iNumberVertice-1)+j-1;
-                    iCol[iEleNumber] = i*iNumberVertice + k;
+                    jCol[iEleNumber] = i*iNumberVertice + k;
                     iEleNumber++;
                 }
+        cout<<"eval_jac_g_1: "<<iEleNumber<<endl;
     } else
     {
         iEleNumber = 0;
@@ -328,6 +326,7 @@ MyTMINLP::eval_jac_g(Index n, const Number* x, bool new_x,
                     }
                     iEleNumber++;
                 }
+        cout<<"eval_jac_g_2: "<<iEleNumber<<endl;
     }
     return true;
 /*  assert(n==4);
@@ -379,7 +378,7 @@ MyTMINLP::eval_h(Index n, const Number* x, bool new_x,
 {
     assert(n==iNumberVariables);
     assert(m==(2*iNumberVariables - 2*iNumberPath + iNumberVertice - 2));
-    assert(nele_hess==((iNumberVariables+1)*iNumberVariables/2));
+    assert(nele_hess==(iNumberVariables*(iNumberVertice+1)/2));
 
     int i, j, k, iEleNumber=0;
 
@@ -391,9 +390,10 @@ MyTMINLP::eval_h(Index n, const Number* x, bool new_x,
                 for (k=0; k<=j; k++)
                 {
                     iRow[iEleNumber] = i*iNumberVertice + j;
-                    iCol[iEleNumber] = i*iNumberVertice + k;
+                    jCol[iEleNumber] = i*iNumberVertice + k;
                     iEleNumber++;
                 }
+        cout<<"eval_h_1: "<<iEleNumber<<endl;
     }else
     {
         iEleNumber = 0;
@@ -403,14 +403,14 @@ MyTMINLP::eval_h(Index n, const Number* x, bool new_x,
                 {
                     if (k!=j)
                     {
-                        values[iEleNumber] = obj_factor * vvCurrentSMatrix[j][k];
+                        values[iEleNumber] = obj_factor * (-2) * vvCurrentSMatrix[j][k];
                         if (j<(iNumberVertice-1))
                             values[iEleNumber] += lambda[iNumberVertice-2 + i*(iNumberVertice-1)+j] * vvCurrentEMatrix[j][k];
                         if (j>0)
                             values[iEleNumber] += lambda[iNumberVertice-2 + iNumberPath*(iNumberVertice-1) + i*(iNumberVertice-1)+j-1] * vvCurrentEMatrix[k][j];
                     }else
                     {
-                        values[iEleNumber] = obj_factor * 2 * vvCurrentSMatrix[j][j];
+                        values[iEleNumber] = obj_factor * (-2) * vvCurrentSMatrix[j][j];
                         if (j<(iNumberVertice-1))
                             values[iEleNumber] += lambda[iNumberVertice-2 + i*(iNumberVertice-1)+j] * 2 * vvCurrentEMatrix[j][j];
                         if (j>0)
@@ -418,7 +418,7 @@ MyTMINLP::eval_h(Index n, const Number* x, bool new_x,
                     }
                     iEleNumber++;
                 }
-
+        cout<<"eval_h_2: "<<iEleNumber<<endl;
     }
     return true;
 /*    

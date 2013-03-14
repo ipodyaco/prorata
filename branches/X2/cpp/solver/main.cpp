@@ -81,8 +81,8 @@ void SolveCurrentCase(int PathNum,  const std::vector< std::vector<int> > & vvEM
                                   "A longer comment can be put here"); 
 
    // Here we can change the default value of some Bonmin or Ipopt option
-   bonmin.options()->SetNumericValue("bonmin.time_limit", 5); //changes bonmin's time limit
-   bonmin.options()->SetStringValue("mu_oracle","loqo");
+   bonmin.options()->SetNumericValue("bonmin.time_limit", 500); //changes bonmin's time limit
+//   bonmin.options()->SetStringValue("mu_oracle","loqo");
  
    //Here we read several option files
    bonmin.readOptionsFile("test/Mybonmin.opt");
@@ -107,21 +107,26 @@ void SolveCurrentCase(int PathNum,  const std::vector< std::vector<int> > & vvEM
     try 
     {
         Bab bb;
+        cout<<"begin solver"<<endl;
         bb(bonmin);//process parameter file using Ipopt and do branch and bound using Cbc 
+        cout<<"end solver"<<endl;
     }
     catch(TNLPSolver::UnsolvedError *E) 
     {
+        cerr<<"wrong1"<<endl;
         //There has been a failure to solve a problem with Ipopt.
         std::cerr<<"Ipopt has failed to solve a problem"<<std::endl;
     }
     catch(OsiTMINLPInterface::SimpleError &E) 
     {
+        cerr<<"wrong2"<<endl;
         std::cerr<<E.className()<<"::"<<E.methodName()
                     <<std::endl
                     <<E.message()<<std::endl;
     }
-    catch(CoinError &E) 
+    catch(CoinError &E)
     {
+        cerr<<"wrong3"<<endl;
         std::cerr<<E.className()<<"::"<<E.methodName()
                   <<std::endl
                   <<E.message()<<std::endl;
