@@ -85,6 +85,8 @@ bool
 MyTMINLP::get_bounds_info(Index n, Number* x_l, Number* x_u,
                             Index m, Number* g_l, Number* g_u)
 {
+    assert(n==iNumberVariables);
+    assert(m==(2*iNumberVariables - 2*iNumberPath + iNumberVertice - 2));
 
     int i, j; 
     for (i=0; i<iNumberPath; i++)
@@ -145,6 +147,11 @@ MyTMINLP::get_starting_point(Index n, bool init_x, Number* x,
                              Index m, bool init_lambda,
                              Number* lambda)
 {
+    assert(n==iNumberVariables);
+    assert(m==(2*iNumberVariables - 2*iNumberPath + iNumberVertice - 2));
+    assert(init_x);
+    assert(!init_lambda);
+
     int i;
     for (i=0; i<iNumberVariables; i++)
         x[i] = 1;
@@ -165,6 +172,8 @@ MyTMINLP::get_starting_point(Index n, bool init_x, Number* x,
 bool 
 MyTMINLP::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 {
+    assert(n==iNumberVariables);
+
     int i, j, k;
     obj_value = 0;
     for (i=0; i<iNumberPath; i++)
@@ -182,6 +191,8 @@ MyTMINLP::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 bool
 MyTMINLP::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
 {
+    assert(n==iNumberVariables);
+
     int i, j, k, iXIndex;
 
     for (i=0; i<iNumberPath; i++)
@@ -210,6 +221,9 @@ MyTMINLP::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
 bool
 MyTMINLP::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
 {
+    assert(n==iNumberVariables);
+    assert(m==(2*iNumberVariables - 2*iNumberPath + iNumberVertice - 2));  
+
     int i,j,k,iGIndex;
     for (i=0; i<(iNumberVertice-2); i++)
     {
@@ -249,6 +263,9 @@ MyTMINLP::eval_jac_g(Index n, const Number* x, bool new_x,
                      Index m, Index nnz_jac, Index* iRow, Index *jCol,
                      Number* values)
 {
+    assert(n==iNumberVariables);
+    assert(nnz_jac == (2*iNumberVariables*iNumberVertice - iNumberVariables - 2*iNumberPath));
+
     int i, j, k, iEleNumber=0;
     if (values == NULL)
     {
@@ -360,6 +377,10 @@ MyTMINLP::eval_h(Index n, const Number* x, bool new_x,
                  bool new_lambda, Index nele_hess, Index* iRow,
                  Index* jCol, Number* values)
 {
+    assert(n==iNumberVariables);
+    assert(m==(2*iNumberVariables - 2*iNumberPath + iNumberVertice - 2));
+    assert(nele_hess==((iNumberVariables+1)*iNumberVariables/2));
+
     int i, j, k, iEleNumber=0;
 
     if (values == NULL)
