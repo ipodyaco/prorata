@@ -10,7 +10,9 @@
  
 #include "BonOsiTMINLPInterface.hpp"
 #include "BonIpoptSolver.hpp"
-#include "MyTMINLP.hpp"
+//#include "MyTMINLP.hpp"
+#include "MyTMINLP2.hpp"
+
 #include "BonCbc.hpp"
 #include "BonBonminSetup.hpp"
 
@@ -139,10 +141,10 @@ int main(int argc, char **argv)
     ReadMatrix myReadMatrix;
     std::vector < std::vector <int> >    vvEMatrix;
     std::vector < std::vector <double> > vvSMatrix;
-    myReadMatrix.InitializeParser("test/testM.txt");
+    myReadMatrix.InitializeParser("test/testM2.txt");
     if (GetNextCase(myReadMatrix, vvEMatrix, vvSMatrix))
     {
-        SolveCurrentCase(2, vvEMatrix, vvSMatrix);
+        SolveCurrentCase(1, vvEMatrix, vvSMatrix);
     }
     else
         myReadMatrix.EndParser();
