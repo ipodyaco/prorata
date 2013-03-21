@@ -168,7 +168,7 @@ void SlaveProcess(const vector<string> & vsFastaFilenames, string & sOutputDirec
 	else
             sFileNameRoot = sFileName.substr(0, pos);
 	sCommand = sCommandFirstPart + " -o "+sOutputDirectory+ getSeparator() +sFileNameRoot
-			+".search.txt " + sprofileDatabasePath + " " + currentWorkFastaFile;
+			+".hmmsearch.output.txt " + sprofileDatabasePath + " " + currentWorkFastaFile;
 	system(sCommand.c_str());
         //cout<<"slave id:"<<myid<<" command: "<<sCommand<<endl;
         MPI_Send(0, 0, MPI_INT, 0, 0, MPI_COMM_WORLD);
