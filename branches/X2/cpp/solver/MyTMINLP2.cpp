@@ -19,12 +19,12 @@ MyTMINLP::MyTMINLP(int PathNum, const std::vector< std::vector<int> > & vvEMatri
 bool 
 MyTMINLP::get_variables_types(Index n, VariableType* var_types)
 {
+    std::cout<<"get_variables_types n="<<n<<std::endl;
+    
     int i;
 //    for (i=0; i < iNumberVariables; i++)
 //        var_types[i] = BINARY;
     var_types[0] = BINARY;
-    var_types[1] = BINARY;
-    var_types[2] = BINARY;
     return true;
   //var_types[0] = BINARY;
   //var_types[1] = CONTINUOUS;
@@ -37,12 +37,11 @@ MyTMINLP::get_variables_types(Index n, VariableType* var_types)
 bool 
 MyTMINLP::get_variables_linearity(Index n, Ipopt::TNLP::LinearityType* var_types)
 {
+    std::cout<<"get_variables_linearity n="<<n<<std::endl;
     int i;
 //    for (i=0; i < iNumberVariables; i++)
 //        var_types[i] = Ipopt::TNLP::NON_LINEAR;
-    var_types[0] = Ipopt::TNLP::NON_LINEAR;
-    var_types[1] = Ipopt::TNLP::NON_LINEAR;
-    var_types[2] = Ipopt::TNLP::NON_LINEAR;
+    var_types[0] = Ipopt::TNLP::LINEAR; //change in the future
     return true;
   //var_types[0] = Ipopt::TNLP::LINEAR;
   //var_types[1] = Ipopt::TNLP::NON_LINEAR;
@@ -55,13 +54,15 @@ MyTMINLP::get_variables_linearity(Index n, Ipopt::TNLP::LinearityType* var_types
 bool 
 MyTMINLP::get_constraints_linearity(Index m, Ipopt::TNLP::LinearityType* const_types)
 {
+    std::cout<<"get_constraints_linearity m="<<m<<std::endl;
     const_types[0] = Ipopt::TNLP::LINEAR;
 
-    const_types[1] = Ipopt::TNLP::NON_LINEAR;
-    const_types[2] = Ipopt::TNLP::NON_LINEAR;
+    const_types[1] = Ipopt::TNLP::LINEAR;
+   // const_types[2] = Ipopt::TNLP::NON_LINEAR;
 
-    const_types[3] = Ipopt::TNLP::NON_LINEAR;
-    const_types[4] = Ipopt::TNLP::NON_LINEAR;
+   // const_types[3] = Ipopt::TNLP::NON_LINEAR;
+    const_types[2] = Ipopt::TNLP::LINEAR;
+
 /*
     assert(m==iNumberVertice-2+2*iNumberVariables-2*iNumberPath);
     int i;
@@ -81,10 +82,11 @@ bool
 MyTMINLP::get_nlp_info(Index& n, Index&m, Index& nnz_jac_g,
                        Index& nnz_h_lag, TNLP::IndexStyleEnum& index_style)
 {
-    n = 3;
-    m = 5;
-    nnz_jac_g = 13;
-    nnz_h_lag = 6;
+    std::cout<<"get_nlp_info"<<std::endl;
+    n = 1;
+    m = 3;
+    nnz_jac_g = 3;
+    nnz_h_lag = 0;
  /*   n = iNumberVariables;
     m = iNumberVertice-2+2*iNumberVariables-2*iNumberPath;
     nnz_jac_g = 2*iNumberVariables*iNumberVertice - iNumberVariables - 2*iNumberPath;
@@ -103,19 +105,18 @@ bool
 MyTMINLP::get_bounds_info(Index n, Number* x_l, Number* x_u,
                             Index m, Number* g_l, Number* g_u)
 {
-    x_l[0] = x_u[0] = 1;
-    x_l[1] = 0;
-    x_u[1] = 1;
-    x_l[2] = x_u[2] = 1;
+    std::cout<<"get_bounds_info n="<<n<<" m="<<m<<std::endl;
+    x_l[0] = 0.;
+    x_u[0] = 1.;
 
     g_l[0] = 1;
     g_u[0] = DBL_MAX;
 
-    g_l[1] = g_u[1] = 0;
-    g_l[2] = g_u[2] = 0;
-    g_l[3] = g_u[3] = 0;
-    g_l[4] = g_u[4] = 0;
-    g_l[5] = g_u[5] = 0;
+    g_l[1] = g_u[1] = 0.;
+    g_l[2] = g_u[2] = 0.;
+
+//    g_l[3] = g_u[3] = 0.;
+//    g_l[4] = g_u[4] = 0.;
 
 /*    assert(n==iNumberVariables);
     assert(m==(2*iNumberVariables - 2*iNumberPath + iNumberVertice - 2));
@@ -179,9 +180,8 @@ MyTMINLP::get_starting_point(Index n, bool init_x, Number* x,
                              Index m, bool init_lambda,
                              Number* lambda)
 {
+    std::cout<<"get_starting_point n="<<n<<" init_x="<<init_x<<" init_z="<<init_z<<" m="<<m<<" init_lambda="<<init_lambda<<std::endl;
     x[0] = 1;
-    x[1] = 1;
-    x[2] = 1;
 
 /*      assert(n==iNumberVariables);
     assert(m==(2*iNumberVariables - 2*iNumberPath + iNumberVertice - 2));
@@ -208,11 +208,12 @@ MyTMINLP::get_starting_point(Index n, bool init_x, Number* x,
 bool 
 MyTMINLP::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 {
+    std::cout<<"eval_f n="<<n<<" new_x="<<new_x<<"x_0="<<x[0]<<std::endl;
+
     int j, k;
     obj_value = 0;
-    for (j=0; j<3; j++)
-        for (k=0; k<3; k++)
-            obj_value = obj_value - vvCurrentSMatrix[j][k] * x[j] * x[k] ;
+    
+    obj_value = obj_value - 1 * x[0] - 1 * x[0]  ;
   /*    assert(n==iNumberVariables);
 
     int i, j, k;
@@ -232,15 +233,14 @@ MyTMINLP::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 bool
 MyTMINLP::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
 {
+    std::cout<<"eval_grad_f n="<<n<<" new_x="<<new_x<<" x_0="<<x[0]<<std::endl;
     int i;
-    for (i=0; i<3; i++)
+    for (i=0; i<1; i++)
         grad_f[i] = 0;
-    for (i=0; i<3; i++)
-    {
-        grad_f[0] = grad_f[0] - 2 * vvCurrentSMatrix[0][i] * x[i];
-        grad_f[1] = grad_f[1] - 2 * vvCurrentSMatrix[1][i] * x[i];
-        grad_f[2] = grad_f[2] - 2 * vvCurrentSMatrix[2][i] * x[i];
-    }
+  //  for (i=0; i<3; i++)
+  //  {
+        grad_f[0] =0  - 1 - 1 ;
+  //  }
 /*
  assert(n==iNumberVariables);
 
@@ -269,26 +269,18 @@ MyTMINLP::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
 bool
 MyTMINLP::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
 {
+    std::cout<<"eval_g n="<<n<<" new_n="<<new_x<<" m="<<m<<" x_0="<<x[0]<<std::endl;
 
     int i;
 
-    g[0] = x[1];
+    g[0] = x[0];
+  
+    g[1] = -1 +  x[0]  ;
+    g[1] = -1 + x[0];
+   // g[2] = -x[0] + vvCurrentEMatrix[1][2] * x[0]  + vvCurrentEMatrix[1][1] * x[0] * x[0] + vvCurrentEMatrix[1][0] * x[0] ;
 
-    g[1] = -x[0];
-    g[2] = -x[1];
-    for (i=0; i<3; i++)
-    {
-        g[1] += vvCurrentEMatrix[0][i] * x[0] * x[i];
-        g[2] += vvCurrentEMatrix[1][i] * x[1] * x[i];
-    }
-
-    g[3] = -x[1];
-    g[4] = -x[2];
-    for (i=0; i<3; i++)
-    {
-        g[3] += vvCurrentEMatrix[i][1] * x[1] * x[i];
-        g[4] += vvCurrentEMatrix[i][2] * x[2] * x[i];
-    }
+  //  g[3] = -x[0] + vvCurrentEMatrix[0][1] * x[0] + vvCurrentEMatrix[1][1] * x[0] * x[0] + vvCurrentEMatrix[2][1] * x[0];
+ //   g[4] = -1 + vvCurrentEMatrix[0][2] + vvCurrentEMatrix[1][2] * x[0] + vvCurrentEMatrix[2][2];
 
     /*
     assert(n==iNumberVariables);
@@ -335,57 +327,33 @@ MyTMINLP::eval_jac_g(Index n, const Number* x, bool new_x,
 {
     if (values == NULL)
     {
+        std::cout<<"eval_jac_g n="<<n<<" new_x="<<new_x<<" m="<<m<<" nnz_jac="<<nnz_jac<<std::endl;
         iRow[0] = 0;
-        jCol[0] = 1;
+        jCol[0] = 0;
 
         iRow[1] = 1;
         jCol[1] = 0;
-        iRow[2] = 1;
-        jCol[2] = 1;
-        iRow[3] = 1;
-        jCol[3] = 2;
+        iRow[2] = 2;
+        jCol[2] = 0;
+   //     iRow[3] = 3;
+   //     jCol[3] = 0;
 
-        iRow[4] = 2;
-        jCol[4] = 0;
-        iRow[5] = 2;
-        jCol[5] = 1;
-        iRow[6] = 2;
-        jCol[6] = 2;
+   //     iRow[4] = 4;
+   //     jCol[4] = 0;
 
-        iRow[7] = 3;
-        jCol[7] = 0;    
-        iRow[8] = 3;
-        jCol[8] = 1;
-        iRow[9] = 3;
-        jCol[9] = 2;
-
-        iRow[10] = 4;
-        jCol[10] = 0;    
-        iRow[11] = 4;
-        jCol[11] = 1;
-        iRow[12] = 4;
-        jCol[12] = 2;
 
 
     }else
     {
+        std::cout<<"eval_jac_g n="<<n<<" new_x="<<new_x<<" m="<<m<<" nnz_jac="<<nnz_jac;
+        std::cout<<" x_0="<<x[0]<<std::endl;
         values[0] = 1;
+        values[1] = 1;
+        values[2] = 1;
+     //   values[2] = -1+vvCurrentEMatrix[1][2]+vvCurrentEMatrix[1][0]+2*vvCurrentEMatrix[1][1]*x[0];
+     //   values[3] = -1 + vvCurrentEMatrix[0][1] + 2*vvCurrentEMatrix[1][1]*x[0] +  vvCurrentEMatrix[2][1] ;
+     //   values[4] = vvCurrentEMatrix[1][2];
 
-        values[1] = 2 * vvCurrentEMatrix[0][0] * x[0] - 1;
-        values[2] = vvCurrentEMatrix[0][1] * x[0];
-        values[3] = vvCurrentEMatrix[0][2] * x[0];
-
-        values[4] = vvCurrentEMatrix[1][0] * x[1];
-        values[5] = 2 * vvCurrentEMatrix[1][1] * x[1] - 1;
-        values[6] = vvCurrentEMatrix[1][2] * x[1];
-
-        values[7] = vvCurrentEMatrix[0][1] * x[1];
-        values[8] = 2 * vvCurrentEMatrix[1][1] * x[1] - 1;
-        values[9] = vvCurrentEMatrix[2][1] * x[1];
-
-        values[10]= vvCurrentEMatrix[0][2] * x[2];
-        values[11]= vvCurrentEMatrix[1][2] * x[2];
-        values[12]= 2 * vvCurrentEMatrix[2][2] * x[2];
     }
 
 
@@ -508,43 +476,26 @@ MyTMINLP::eval_h(Index n, const Number* x, bool new_x,
 {
     if (values == NULL)
     {
-        iRow[0] = 0;
-        jCol[0] = 0;
+        std::cout<<"eval_h n="<<n<<" new_x="<<new_x<<" obj_factor="<<obj_factor;
+        std::cout<<" m="<<m<<" new_lambda="<<new_lambda<<" nele_hess="<<nele_hess<<std::endl;
+        //std::cout<<" x_1="<<x[1]<<std::endl;
+  //      iRow[0] = 0;
+  //      jCol[0] = 0;
 
-        iRow[1] = 1;
-        jCol[1] = 0;
-
-        iRow[2] = 1;
-        jCol[2] = 1;
-
-        iRow[3] = 2;
-        jCol[3] = 0;
-
-        iRow[4] = 2;
-        jCol[4] = 1;
-
-        iRow[5] = 2;
-        jCol[5] = 2;
     }else
     {
-        values[0] = obj_factor * (-2) * vvCurrentSMatrix[0][0];
-        values[1] = obj_factor * (-2) * vvCurrentSMatrix[1][0];
-        values[2] = obj_factor * (-2) * vvCurrentSMatrix[1][1];
-        values[3] = obj_factor * (-2) * vvCurrentSMatrix[2][0];
-        values[4] = obj_factor * (-2) * vvCurrentSMatrix[2][1];
-        values[5] = obj_factor * (-2) * vvCurrentSMatrix[2][2];
+        std::cout<<"eval_h n="<<n<<" new_x="<<new_x<<" obj_factor="<<obj_factor;
+        std::cout<<" m="<<m<<" new_lambda="<<new_lambda<<" nele_hess="<<nele_hess;
+        std::cout<<" x_0="<<x[0];
+        std::cout<<" l_0="<<lambda[0]<<" l_1="<<lambda[1]<<" l_2="<<lambda[2];
+        std::cout<<" l_3="<<lambda[3]<<" l_4="<<lambda[4]<<std::endl;
 
-        values[0] += lambda[1] * 2 * vvCurrentEMatrix[0][0];
-        values[1] += lambda[1] * vvCurrentEMatrix[0][1] + lambda[2] * vvCurrentEMatrix[1][0];
-        values[2] += lambda[2] * 2 * vvCurrentEMatrix[1][1]; 
-        values[3] += lambda[1] * vvCurrentEMatrix[0][2];
-        values[4] += lambda[2] * vvCurrentEMatrix[1][2];
 
-        values[1] += lambda[3] * vvCurrentEMatrix[1][0];
-        values[2] += lambda[3] * 2 * vvCurrentEMatrix[1][1];
-        values[3] += lambda[4] * vvCurrentEMatrix[2][0];
-        values[4] += lambda[3] * vvCurrentEMatrix[1][2] + lambda[4] * vvCurrentEMatrix[2][1];
-        values[5] += lambda[4] * vvCurrentEMatrix[2][2];
+    //    values[0] = obj_factor * (-2) * vvCurrentSMatrix[1][1];
+
+    //    values[0] += lambda[2] * 2 * vvCurrentEMatrix[1][1];
+
+    //    values[0] += lambda[3] * 2 * vvCurrentEMatrix[1][1];
 
     }
 

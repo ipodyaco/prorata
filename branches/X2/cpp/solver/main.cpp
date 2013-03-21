@@ -85,7 +85,7 @@ void SolveCurrentCase(int PathNum,  const std::vector< std::vector<int> > & vvEM
    // Here we can change the default value of some Bonmin or Ipopt option
    bonmin.options()->SetNumericValue("bonmin.time_limit", 500); //changes bonmin's time limit
 //   bonmin.options()->SetStringValue("mu_oracle","loqo");
- 
+//   bonmin.options()->SetStringValue("warm start init point", "yes"); 
    //Here we read several option files
    bonmin.readOptionsFile("test/Mybonmin.opt");
    bonmin.readOptionsFile();// This reads the default file "bonmin.opt"
