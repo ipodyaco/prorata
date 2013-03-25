@@ -93,7 +93,7 @@ def sort_filenames(filename_list) :
 
 
 def AddRecordToFile(feature_list, current_PfamID, curent_read_seq, output_dir) :
-    output_filename = output_dir+current_PfamID+"search.group.txt"
+    output_filename = output_dir+current_PfamID+".model.group.txt"
     if (os.path.exists(output_filename)) :
         output_file = open(output_filename, "w")
         output_file.write("Pfam_ID\tPeptide_ID\tscore\thmmfrom\thmm_to\talifrom\tali_to\tModel_alignment\tPeptide_alignment\tRead_Seq\n")
