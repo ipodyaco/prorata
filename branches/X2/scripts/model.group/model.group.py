@@ -18,7 +18,7 @@ def parse_options(argv):
     # Basic options
     for option, value in opts:
         if option in ("-h", "--help"):
-            print "-o outputdirectory -w workingdirectory -f read_filename -n subset sequence_number"
+            print "-o outputdirectory -w workingdirectory -f read_filename -n subset_sequence_number"
             sys.exit(1)
         if option in ("-w", "--working-dir"):
             working_dir = value
@@ -84,7 +84,7 @@ def identifyAllColumnID(first_line) :
 def sort_filenames(filename_list) :
     all_filename_list = []
     for each_filename in filename_list :
-        (each_filename_head each_filename_tail) = os.path.split(each_filename)
+        (each_filename_head, each_filename_tail) = os.path.split(each_filename)
         each_filename_root = each_filename_head.split(".")[0]
         each_filename_index= int(each_filename_root.split("_")[-1])
         all_filename_list.append([each_filename_index, each_filename])
@@ -129,7 +129,7 @@ def handleFilterFile(current_read_list, current_filter_filename, output_dir) :
             if (current_read_seq == ""):
                 print "can't find seq: "+ current_readID
                 sys.exit(1)
-            else
+            else :
                 AddRecordToFile(feature_list, current_PfamID, curent_read_seq, output_dir)
 
     filter_file.close()
