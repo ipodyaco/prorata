@@ -100,6 +100,7 @@ def handleSearchFile(search_filename, output_dir) :
             modelId  = queryInfo[7]
         if (eachline.startswith(">>")) : # a hit
             peptideId = eachline[2:].strip()
+            peptideId_short = peptideId.split(" ")[0]
             isDomain = True
             lineCount= 0
         if (isDomain) :
@@ -107,10 +108,11 @@ def handleSearchFile(search_filename, output_dir) :
         if (lineCount == 4) : # score, range, and other info
             scoreInfo = IdentifyScore (eachline)
         if (isDomain) : 
-            if (eachline.startswith(modelId)):
+            if (eachline.startswith(modelId) and eachline[-1:].isdigit()):
+                #print search_filename, eachline
                 aliInfo     = eachline.split(" ")
                 modelAlignment = aliInfo[-2]
-            if (eachline.startswith(peptideId)):
+            if (eachline.startswith(peptideId_short)):
                 aliInfo     = eachline.split(" ")
                 peptideAlignment = aliInfo[-2]
                 isDomain = False
