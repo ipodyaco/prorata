@@ -5,6 +5,8 @@
 import sys, getopt, warnings, os, re
 from datetime import datetime, date, time
 
+from rdkit import Chem
+from rdkit.Chem import Descriptors
 
 def parse_options(argv):
 
@@ -65,20 +67,47 @@ def get_file_list_with_ext(working_dir, file_ext):
 
     return file_list
 
-def parseMassbankFile(currentSMILESFileName) :
-    current_SMILES_file = open(currentSMILESFileName)
+def parseMassbankFile(currentInchiFileName) :
+    current_Inchi_file = open(currentInchiFileName)
 
-    for each_line in current_SMILES_file :    
+    for each_line in current_Inchi_file :    
         each_line = each_line.strip()
-        if each_line.startswith("CH$SMILES:") :
+        if each_line.startswith("CH$IUPAC:") :
             s_chemical_structure = each_line.split(" ")[1]
             print s_chemical_structure
             break
-    current_SMILES_file.close()
+    current_Inchi_file.close()
+    return s_chemical_structure
 
-def HandleSMILE(currentSMILESFileName, output_file) :
-    output_file.write(">\t"+currentSMILESFileName+"\n")
-    parseMassbankFile(currentSMILESFileName)
+def BreakOneBond(current_mol, iBondsNum) :
+    for i in range(iBondsNum) :
+        current_editable_mol = Chem.EditableMol(current_mol)
+        current_bond  = current_mol.GetBondWithIdx(i)
+        idx_beginAtom = current_bond.GetBeginAtomIdx()
+        idx_endAtom   = current_bond.GetEndAtomIdx()
+        current_editable_mol.RemoveBond(idx_beginAtom, idx_endAtom)
+        current_modified_mol = current_editable_mol.GetMol()
+        current_fragments    = Chem.GetMolFrags(current_modified_mol, asMols=True)
+        #current_fragments    = Chem.GetMolFrags(current_modified_mol)
+        if (len(current_fragments) > 1) :
+            for each_fragment in current_fragments :
+                current_sInchi = Chem.MolToInchi(each_fragment)
+                current_dMass  = Descriptors.ExactMolWt(each_fragment)
+                current_sBondType = current_bond.GetBondType()
+                print current_dMass, current_sBondType, current_sInchi
+        #        print each_fragment
+def ExhaustBonds(sInchiInfo) :
+    current_mol = Chem.MolFromInchi(sInchiInfo)
+    iBondsNum = current_mol.GetNumBonds()
+    BreakOneBond(current_mol, iBondsNum)
+    
+
+def HandleInchi(currentInchiFileName, output_file) :
+    output_file.write(">\t"+currentInchiFileName+"\n")
+    sInchiInfo = parseMassbankFile(currentInchiFileName)
+    ExhaustBonds(sInchiInfo)
+    
+
 
 def main(argv=None):
 
@@ -86,10 +115,10 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
        		 # parse options
-        [SMILES_filename_list ,  outputFileName] = parse_options(argv)  
+        [Inchi_filename_list ,  outputFileName] = parse_options(argv)  
     output_file = open(outputFileName, "w")
-    for eachSMILESFileName in SMILES_filename_list : 
-        HandleSMILE(eachSMILESFileName, output_file)
+    for eachInchiFileName in Inchi_filename_list : 
+        HandleInchi(eachInchiFileName, output_file)
 
     output_file.close()
 
