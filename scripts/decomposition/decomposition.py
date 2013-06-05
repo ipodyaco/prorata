@@ -68,18 +68,45 @@ def get_file_list_with_ext(working_dir, file_ext):
     return file_list
 
 def parseMassbankFile(currentInchiFileName) :
+    bPeakBegin = False
+    allPeaks_list = []
     current_Inchi_file = open(currentInchiFileName)
 
     for each_line in current_Inchi_file :    
         each_line = each_line.strip()
         if each_line.startswith("CH$IUPAC:") :
             s_chemical_structure = each_line.split(" ")[1]
-            print s_chemical_structure
-            break
-    current_Inchi_file.close()
-    return s_chemical_structure
+            #print s_chemical_structure
+        if each_line.startswith("PK$NUM_PEAK:") :
+            iPeakNum =int (each_line.split(":")[1])
+        if each_line.startswith("PK$PEAK:") :
+            bPeakBegin = True
+            continue
+        if bPeakBegin :
+            sPeakInfo_list = each_line.split(" ")
+            currentPeak = []
+            # Peak format m/z int rel.int
+            for i in range(3) :
+                if (i<2) :
+                    currentPeak.append(float(sPeakInfo_list[i]))
+                else :
+                    currentPeak.append(int(sPeakInfo_list[i]))
+            allPeaks_list.append(currentPeak)
+            iPeakNum -= 1
+            if (iPeakNum == 0) :
+                bPeakBegin = False
 
-def BreakOneBond(current_mol, iBondsNum) :
+    current_Inchi_file.close()
+    #print allPeaks_list 
+    return s_chemical_structure, allPeaks_list
+
+def MapMass(current_dMass, allPeaks_list) :
+    z_list = [1] 
+    mz_windows_list = [-2, -1, 0, 1, 2]
+    dMass_Tolerance_Fragment_Ions = 0.01
+
+
+def BreakOneBond(current_mol, iBondsNum, allPeaks_list) :
     for i in range(iBondsNum) :
         current_editable_mol = Chem.EditableMol(current_mol)
         current_bond  = current_mol.GetBondWithIdx(i)
@@ -96,15 +123,17 @@ def BreakOneBond(current_mol, iBondsNum) :
                 current_sBondType = current_bond.GetBondType()
                 print current_dMass, current_sBondType, current_sInchi
         #        print each_fragment
-def ExhaustBonds(sInchiInfo) :
+                MapMass(current_dMass, allPeaks_list)
+
+def ExhaustBonds(sInchiInfo, allPeaks_list) :
     current_mol = Chem.MolFromInchi(sInchiInfo)
     iBondsNum = current_mol.GetNumBonds()
-    BreakOneBond(current_mol, iBondsNum)
+    BreakOneBond(current_mol, iBondsNum, allPeaks_list)
     
 
 def HandleInchi(currentInchiFileName, output_file) :
     output_file.write(">\t"+currentInchiFileName+"\n")
-    sInchiInfo = parseMassbankFile(currentInchiFileName)
+    sInchiInfo, allPeaks_list = parseMassbankFile(currentInchiFileName)
     ExhaustBonds(sInchiInfo)
     
 
