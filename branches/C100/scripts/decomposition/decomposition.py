@@ -4,6 +4,7 @@
 ## Import Python package modules
 import sys, getopt, warnings, os, re
 from datetime import datetime, date, time
+import itertools
 
 from rdkit import Chem
 from rdkit.Chem import Descriptors
@@ -106,35 +107,29 @@ def MapMass(current_dMass, allPeaks_list) :
     mz_windows_list = [-2, -1, 0, 1, 2]
     dMass_Tolerance_Fragment_Ions = 0.01
 
-def RemoveOneBond(original_mol, current_editable_mol, bond_idx) :
-    current_bond  = original_mol.GetBondWithIdx(bond_idx)
-    idx_beginAtom = current_bond.GetBeginAtomIdx()
-    idx_endAtom   = current_bond.GetEndAtomIdx()
-    current_editable_mol.RemoveBond(idx_beginAtom, idx_endAtom)
-    current_modified_mol = current_editable_mol.GetMol()
-    current_fragments_list = Chem.GetMolFrags(current_modified_mol, asMols=True, sanitizeFrags=False)
-    return current_editable_mol, current_fragments_list
 
-def DumpFragments(current_mol, fragment_list) :
-    for each_fragment_info in fragment_list :
-        current_fragment = each_fragment_info[0]
-        current_bond_idx = each_fragment_info[1]
-        current_bond     = current_mol.GetBondWithIdx(current_bond_idx)
-        current_sBondType = current_bond.GetBondType()
-        current_dFragmentFormula = AllChem.CalcMolFormula(current_fragment)
-        current_dMass    = Descriptors.ExactMolWt(current_fragment)
-        print current_dMass, current_sBondType, current_dFragmentFormula
+def DumpOneFragment(current_fragment_mol, FragmentBonds_list) :
+    current_dMass    = Descriptors.ExactMolWt(current_fragment_mol)
+    current_sFragmentFormula = AllChem.CalcMolFormula(current_fragment_mol)
+    sBondsTypes = "{"
+    for current_bond in FragmentBonds_list :
+        if (sBondsTypes != "{") :
+            sBondsTypes += ","
+        sBondsTypes += str(current_bond.GetBondType())
+    sBondsTypes += "}"
+    current_inchi =  Chem.MolToInchi(current_fragment_mol)
+    print current_dMass, current_sFragmentFormula, sBondsTypes, current_inchi
 
 def ClassifyBonds(current_mol) :
     ring_bonds_list   = []
     linear_bonds_list = []
     iBondsNum = current_mol.GetNumBonds() 
-    for i in iBondsNum :
+    for i in range(iBondsNum) :
         current_bond = current_mol.GetBondWithIdx(i)
         if current_bond.IsInRing()  :
-            ring_bonds_list.append(i)
+            ring_bonds_list.append(current_bond)
         else :
-            linear_bonds_list.append(i)
+            linear_bonds_list.append(current_bond)
     return ring_bonds_list, linear_bonds_list
 
 def RemoveBonds(current_editable_mol, bonds_list) :
@@ -173,62 +168,35 @@ def TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, iDepth) :
                 if (bValidOperation) :
                     for i in range(2) :
                         iCurrentFragmentNum =  len(FragmentTree_list)
-                        FatherBonds_list    =  FragmentTree_list [iCurrentFatherIdx][1]
+                        FragmentBonds_list  =  list( FragmentTree_list [iCurrentFatherIdx][1] )
+                        print FragmentBonds_list
                         FragmentTree_list [iCurrentFatherIdx][2].append(iCurrentFragmentNum)
-                        FragmentBonds_list = FatherBonds_list.append(each_bond)
+                        FragmentBonds_list.append(each_bond)
                         FragmentTree_list.append([Chem.EditableMol(current_fragments_list[i]), FragmentBonds_list, [], iCurrentFatherIdx])
+                        DumpOneFragment(current_fragments_list[i], FragmentBonds_list)
                 else :
                     print "wrong!"
                     sys.exit(1)
 
+            removable_bonds_iter = itertools.combinations(current_ring_bonds_list, 2)
+            for first_bond, second_bond in removable_bonds_iter :
+                current_fragments_list, bValidOperation = RemoveBonds(current_editable_mol, [first_bond, second_bond])
+                if (bValidOperation) :
+                    for i in range(2) :
+                        iCurrentFragmentNum =  len(FragmentTree_list) 
+                        FragmentBonds_list  =  list( FragmentTree_list [iCurrentFatherIdx][1] )
+                        FragmentTree_list [iCurrentFatherIdx][2].append(iCurrentFragmentNum)
+                        FragmentBonds_list.append(first_bond)
+                        FragmentBonds_list.append(second_bond)
+                        FragmentTree_list.append([Chem.EditableMol(current_fragments_list[i]), FragmentBonds_list, [], iCurrentFatherIdx])
+                        DumpOneFragment(current_fragments_list[i], FragmentBonds_list)
 
-
-
-def BreakBonds(current_mol, iBondsNum, allPeaks_list, iMaxBreakBondNum) :
-    seed_mol_list = []
-    new_seed_mol_list = []
-    fragment_list = []
-    iRealMaxBreakBondNum = min(iBondsNum, iMaxBreakBondNum)
-    for iBreakBondNum in range(1, iRealMaxBreakBondNum+1) :
-        if (iBreakBondNum == 1) :
-            for BreakBond_idx in range(iBondsNum) :
-                #bGenerateNewFragment = False
-                current_editable_mol = Chem.EditableMol(current_mol)
-                current_bond  = current_mol.GetBondWithIdx(BreakBond_idx)
-                if (current_bond.GetIsAromatic() ) :
-                    continue
-                current_updated_editable_mol, current_fragments_list = RemoveOneBond(current_mol, current_editable_mol, BreakBond_idx)
-                seed_mol_list.append([current_updated_editable_mol, BreakBond_idx])
-                if (len(current_fragments_list) > 1) : 
-                    for each_fragment in current_fragments_list :
-                        fragment_list.append([each_fragment, BreakBond_idx])
-        else :
-            new_seed_mol_list = []
-            for each_seed in seed_mol_list :
-                seed_mol = each_seed[0].GetMol()
-                seed_fragment_num = len(Chem.GetMolFrags(seed_mol, asMols=True, sanitizeFrags=False))
-                for BreakBond_idx in range(each_seed[1]+1, iBondsNum) :
-                    current_editable_mol = each_seed[0]
-                    current_bond  = current_mol.GetBondWithIdx(BreakBond_idx)
-                    if (current_bond.GetIsAromatic() ) :
-                        continue
-                    current_updated_editable_mol, current_fragments_list = RemoveOneBond(current_mol, current_editable_mol, BreakBond_idx)
-                    new_seed_mol_list.append([current_updated_editable_mol, BreakBond_idx])
-                    if (len(current_fragments_list) > seed_fragment_num) :
-                        for each_fragment in current_fragments_list :
-                            if any(each_fragment == existing_fragment_info[0] for existing_fragment_info in fragment_list ) :
-                                continue
-                            fragment_list.append([each_fragment, BreakBond_idx])
-            seed_mol_list = new_seed_mol_list
-            new_seed_mol_list =[]
-    DumpFragments(current_mol, fragment_list) 
 
 def ExhaustBonds(sInchiInfo, allPeaks_list) :
     current_mol = Chem.MolFromInchi(sInchiInfo)
     print Descriptors.ExactMolWt(current_mol), "NULL", AllChem.CalcMolFormula(current_mol)
     iBondsNum = current_mol.GetNumBonds()
-    #BreakOneBond(current_mol, iBondsNum, allPeaks_list)
-    BreakBonds(current_mol, iBondsNum, allPeaks_list, 4)
+    TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, 3)
     
 
 def HandleInchi(currentInchiFileName, output_file) :
