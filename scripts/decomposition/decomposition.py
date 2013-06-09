@@ -4,7 +4,7 @@
 ## Import Python package modules
 import sys, getopt, warnings, os, re
 from datetime import datetime, date, time
-import itertools
+import itertools, copy, math
 
 from rdkit import Chem
 from rdkit.Chem import Descriptors
@@ -16,12 +16,12 @@ def parse_options(argv):
     opts, args = getopt.getopt(argv[1:], "hw:c:o:",
                                     ["help",
                                      "working-dir",
-				                     "output-file",])
+				                     "output-dir",])
 
 
     # Default working dir and config file
     working_dir = "./"
-    outputFileName = ""
+    output_dir = ""
 
     # Basic options
     for option, value in opts:
@@ -32,15 +32,15 @@ def parse_options(argv):
             working_dir = value
             if working_dir[-1] != '/':
                 working_dir = working_dir + '/'
-        if option in ("-o", "--output-file"):
-            outputFileName = value
+        if option in ("-o", "--output-dir"):
+            output_dir = value
 
     SMILES_filename_list = get_file_list_with_ext(working_dir, ".txt")
     
-    if (outputFileName == "") :
-        outputFileName = working_dir + "output"
+    if (output_dir== "") :
+        output_dir = working_dir 
 
-    return [SMILES_filename_list ,  outputFileName]
+    return [SMILES_filename_list ,  output_dir]
 
 ## Get file(s) list in working dir with specific file extension
 def get_file_list_with_ext(working_dir, file_ext):
@@ -69,12 +69,13 @@ def get_file_list_with_ext(working_dir, file_ext):
 
     return file_list
 
-def parseMassbankFile(currentInchiFileName) :
+def parseMassbankFile(currentInchiFileName, output_file) :
     bPeakBegin = False
     allPeaks_list = []
     current_Inchi_file = open(currentInchiFileName)
 
     for each_line in current_Inchi_file :    
+        output_file.write(each_line)
         each_line = each_line.strip()
         if each_line.startswith("CH$IUPAC:") :
             s_chemical_structure = each_line.split(" ")[1]
@@ -102,10 +103,60 @@ def parseMassbankFile(currentInchiFileName) :
     #print allPeaks_list 
     return s_chemical_structure, allPeaks_list
 
-def MapMass(current_dMass, allPeaks_list) :
+def ExactBondsInfo(FragmentBonds_list) :
+    iNumBond = len(FragmentBonds_list)
+    if (iNumBond == 0) :
+        sBondType = "NA"
+    else :
+        sBondType = ""
+        for current_bond in FragmentBonds_list :
+            sBeginAtom = current_bond.GetBeginAtom().GetSymbol()
+            sEndAtom   = current_bond.GetEndAtom().GetSymbol()
+            sType      = str(current_bond.GetBondType())
+            if (sType == "SINGLE"):
+                sRepresentType = "-"
+            elif (sType == "DOUBLE"):
+                sRepresentType = "="
+            elif (sType == "TRIPLE"):
+                sRepresentType = "~"
+            elif (sType == "AROMATIC"):
+                sRepresentType = "*"
+            else :
+                sRepresentType = "("+sType+")"
+            sBondType += sBeginAtom + sRepresentType + sEndAtom + ","
+        sBondType = sBondType[:-1]
+    sAllBond = str(iNumBond)+"\t"+sBondType
+    return sAllBond
+
+def NewMatchedFragment (current_peakmatches_list, sCurrent_mz_offset, sCurrent_sFragmentFormula, sCurrent_smiles ) :
+    bNewFragment = True
+    for each_storedfragment in current_peakmatches_list :
+        if (each_storedfragment[0] == sCurrent_mz_offset) :
+            if (each_storedfragment[1] == sCurrent_sFragmentFormula) :
+                if (each_storedfragment[2] == sCurrent_smiles) :
+                    bNewFragment = False
+                    break
+    return bNewFragment
+
+def MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, FragmentBonds_list) :
     z_list = [1] 
-    mz_windows_list = [-2, -1, 0, 1, 2]
+    mz_windows_list = [0, 1, 2]
     dMass_Tolerance_Fragment_Ions = 0.01
+    bFindPeak = False
+    sBondInfo = ExactBondsInfo(FragmentBonds_list)
+    for i in range(len(allPeaks_list)) :
+        each_peak = allPeaks_list[i]
+        dMeasuredMZ = each_peak[0]
+        for current_z in z_list :
+            for current_mz_offset in mz_windows_list :
+                mzdiff =math.fabs ((current_dMass + current_mz_offset)/current_z  - dMeasuredMZ)
+                if mzdiff <= dMass_Tolerance_Fragment_Ions :
+                    dErrorDa = dMeasuredMZ - current_dMass/current_z
+                    if (NewMatchedFragment (peakmatch_list[i], str(current_mz_offset), str(current_sFragmentFormula),str(current_smiles) )) :
+                        peakmatch_list[i].append([str(current_mz_offset),str(current_sFragmentFormula),str(current_smiles),sBondInfo,dErrorDa])
+                    bFindPeak = True
+                    break
+    return bFindPeak
 
 
 def DumpOneFragment(current_fragment_mol, FragmentBonds_list) :
@@ -117,8 +168,11 @@ def DumpOneFragment(current_fragment_mol, FragmentBonds_list) :
             sBondsTypes += ","
         sBondsTypes += str(current_bond.GetBondType())
     sBondsTypes += "}"
-    current_inchi =  Chem.MolToInchi(current_fragment_mol)
-    print current_dMass, current_sFragmentFormula, sBondsTypes, current_inchi
+    #current_SanitizedMol = Chem.SanitizeMol(current_fragment_mol)
+    #current_inchi =  Chem.MolToInchi(current_fragment_mol)
+    current_smiles=  Chem.MolToSmiles (current_fragment_mol)
+    #print current_dMass, current_sFragmentFormula, sBondsTypes, current_smiles
+    return current_dMass, current_sFragmentFormula, current_smiles
 
 def ClassifyBonds(current_mol) :
     ring_bonds_list   = []
@@ -132,8 +186,9 @@ def ClassifyBonds(current_mol) :
             linear_bonds_list.append(current_bond)
     return ring_bonds_list, linear_bonds_list
 
-def RemoveBonds(current_editable_mol, bonds_list) :
-    em = current_editable_mol
+def RemoveBonds(current_mol, bonds_list) :
+   # print len( Chem.GetMolFrags(current_mol, asMols=True)  )
+    em = Chem.EditableMol(current_mol)
     for each_removable_bond in bonds_list :
         idx_beginAtom = each_removable_bond.GetBeginAtomIdx()
         idx_endAtom   = each_removable_bond.GetEndAtomIdx()
@@ -144,43 +199,48 @@ def RemoveBonds(current_editable_mol, bonds_list) :
         bValidOperation = True
     else :
         bValidOperation = False
+    #print len( Chem.GetMolFrags(current_mol, asMols=True)  )
     return current_fragments_list, bValidOperation
+    
 
-
-def TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, iDepth) :
-    FragmentTree_list = [[Chem.EditableMol(current_mol), [], [], -1]] # editable_mol, list of list of removed bonds, children, father Idx 
-    iCurrentGrandpaIdx= -1
-    iCurrentFatherIdx = 0
-    iCurrentChindIdx  = 0
-    for iCurrentDepth in range (iDepth) :
-        if (iCurrentGrandpaIdx < 0) : # at root
-            iCurrent_FatherIdx_list = [0]
-        else :
-            iCurrent_FatherIdx_list = FragmentTree_list[iCurrentGrandpaIdx][2]
-        for iCurrentFatherIdx in iCurrent_FatherIdx_list :
+def TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, iDepth, peakmatch_list) :
+    FragmentTree_list = [[Chem.EditableMol(current_mol), [], [], -1, 0]] # editable_mol,list of list of removed bonds,kids,father Idx,depth 
+    iCurrent_FatherIdx_list = [0]
+    while (len(iCurrent_FatherIdx_list)>0) :
+            iCurrentFatherIdx = iCurrent_FatherIdx_list[0]
+            del iCurrent_FatherIdx_list[0]
             FatherFragmentInfo_list = FragmentTree_list [iCurrentFatherIdx]
             current_editable_mol    = FatherFragmentInfo_list[0]
+            iFatherDepth = FatherFragmentInfo_list[4]
             #Classify Bonds
             current_ring_bonds_list, current_linear_bonds_list = ClassifyBonds(FatherFragmentInfo_list[0].GetMol())
             
             for each_bond in current_linear_bonds_list :
-                current_fragments_list, bValidOperation = RemoveBonds(current_editable_mol, [each_bond])
+                current_fragments_list, bValidOperation = RemoveBonds(current_editable_mol.GetMol(), [each_bond])
                 if (bValidOperation) :
                     for i in range(2) :
                         iCurrentFragmentNum =  len(FragmentTree_list)
                         FragmentBonds_list  =  list( FragmentTree_list [iCurrentFatherIdx][1] )
-                        print FragmentBonds_list
+                        #print FragmentBonds_list
                         FragmentTree_list [iCurrentFatherIdx][2].append(iCurrentFragmentNum)
                         FragmentBonds_list.append(each_bond)
-                        FragmentTree_list.append([Chem.EditableMol(current_fragments_list[i]), FragmentBonds_list, [], iCurrentFatherIdx])
-                        DumpOneFragment(current_fragments_list[i], FragmentBonds_list)
+                        new_fragment = [Chem.EditableMol(current_fragments_list[i]), FragmentBonds_list, [], iCurrentFatherIdx, iFatherDepth+1]
+                    
+                        current_dMass, current_sFragmentFormula, current_smiles=DumpOneFragment(current_fragments_list[i], FragmentBonds_list)
+                        bFindPeak=MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, FragmentBonds_list)
+                        #if (bFindPeak) :
+                        if (True):
+                            FragmentTree_list.append(new_fragment)
+                            if ((iFatherDepth+1) < iDepth) :
+                                iCurrent_FatherIdx_list.append(iCurrentFragmentNum)
+
                 else :
                     print "wrong!"
                     sys.exit(1)
 
             removable_bonds_iter = itertools.combinations(current_ring_bonds_list, 2)
             for first_bond, second_bond in removable_bonds_iter :
-                current_fragments_list, bValidOperation = RemoveBonds(current_editable_mol, [first_bond, second_bond])
+                current_fragments_list, bValidOperation = RemoveBonds(current_editable_mol.GetMol(), [first_bond, second_bond])
                 if (bValidOperation) :
                     for i in range(2) :
                         iCurrentFragmentNum =  len(FragmentTree_list) 
@@ -188,22 +248,49 @@ def TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, iDepth) :
                         FragmentTree_list [iCurrentFatherIdx][2].append(iCurrentFragmentNum)
                         FragmentBonds_list.append(first_bond)
                         FragmentBonds_list.append(second_bond)
-                        FragmentTree_list.append([Chem.EditableMol(current_fragments_list[i]), FragmentBonds_list, [], iCurrentFatherIdx])
-                        DumpOneFragment(current_fragments_list[i], FragmentBonds_list)
+                        new_fragment = [Chem.EditableMol(current_fragments_list[i]), FragmentBonds_list, [], iCurrentFatherIdx, iFatherDepth+1]
+                        if ((iFatherDepth+1) < iDepth) :
+                            iCurrent_FatherIdx_list.append(iCurrentFragmentNum)
+                        current_dMass, current_sFragmentFormula, current_smiles=DumpOneFragment(current_fragments_list[i], FragmentBonds_list)
+                        bFindPeak = MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, FragmentBonds_list)
+                        #if (bFindPeak) :
+                        if (True) :
+                            FragmentTree_list.append(new_fragment)
+                            if ((iFatherDepth+1) < iDepth) :
+                                iCurrent_FatherIdx_list.append(iCurrentFragmentNum)
 
-
-def ExhaustBonds(sInchiInfo, allPeaks_list) :
+def ExhaustBonds(sInchiInfo, allPeaks_list, peakmatch_list) :
     current_mol = Chem.MolFromInchi(sInchiInfo)
+    current_sFragmentFormula = Descriptors.ExactMolWt(current_mol)
+    current_smiles = Chem.MolToSmiles(current_mol)
     print Descriptors.ExactMolWt(current_mol), "NULL", AllChem.CalcMolFormula(current_mol)
+    MapMass(Descriptors.ExactMolWt(current_mol), allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, [])
     iBondsNum = current_mol.GetNumBonds()
-    TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, 3)
+    TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, 3, peakmatch_list)
     
 
 def HandleInchi(currentInchiFileName, output_file) :
-    output_file.write(">\t"+currentInchiFileName+"\n")
-    sInchiInfo, allPeaks_list = parseMassbankFile(currentInchiFileName)
-    ExhaustBonds(sInchiInfo, allPeaks_list)
-    
+    #output_file.write(">\t"+currentInchiFileName+"\n")
+    sInchiInfo, allPeaks_list = parseMassbankFile(currentInchiFileName, output_file)
+    output_file.write("\n")
+    output_file.write("peak\tm/z\tint\trel_int\tH_added\tformula\tSMILES\tnum_bonds_cleaved\ttypes_bonds_cleaved\terror_Da\n")
+    peakmatch_list = [[] for each_peak in allPeaks_list]
+    ExhaustBonds(sInchiInfo, allPeaks_list, peakmatch_list)
+    for i in range(len(allPeaks_list)):
+        current_peak = allPeaks_list[i]
+        if (len(peakmatch_list[i]) == 0 ) :
+            output_file.write(str(i+1))
+            for peak_item in current_peak :
+                output_file.write("\t" + str(peak_item))
+            output_file.write("\tNA\tNA\tNA\tNA\tNA\tNA\n")
+        else :
+            for each_peakmatch in peakmatch_list[i] :
+                output_file.write(str(i+1))
+                for peak_item in current_peak :
+                    output_file.write("\t" + str(peak_item))
+                for each_data in each_peakmatch :
+                     output_file.write("\t" + str(each_data))
+                output_file.write("\n")   
 
 
 def main(argv=None):
@@ -212,9 +299,12 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
        		 # parse options
-        [Inchi_filename_list ,  outputFileName] = parse_options(argv)  
-    output_file = open(outputFileName, "w")
-    for eachInchiFileName in Inchi_filename_list : 
+        [Inchi_filename_list ,  output_dir] = parse_options(argv)  
+    #output_file = open(outputFileName, "w")
+    for eachInchiFileName in Inchi_filename_list :
+        outputFileName = output_dir+os.path.basename(eachInchiFileName)+"output.txt"
+        output_file = open(outputFileName, "w")
+        print eachInchiFileName
         HandleInchi(eachInchiFileName, output_file)
         print "***********************************************************"
 
