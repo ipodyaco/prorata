@@ -140,23 +140,26 @@ def NewMatchedFragment (current_peakmatches_list, sCurrent_mz_offset, sCurrent_s
 
 def MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, FragmentBonds_list) :
     z_list = [1] 
-    mz_windows_list = [0, 1, 2]
+    mz_windows_list = [-1, 0, 1, 2]
     dMass_Tolerance_Fragment_Ions = 0.01
+    dHMass = 1.007825
     bFindPeak = False
+    bNewFragment = True
     sBondInfo = ExactBondsInfo(FragmentBonds_list)
     for i in range(len(allPeaks_list)) :
         each_peak = allPeaks_list[i]
         dMeasuredMZ = each_peak[0]
         for current_z in z_list :
             for current_mz_offset in mz_windows_list :
-                mzdiff =math.fabs ((current_dMass + current_mz_offset)/current_z  - dMeasuredMZ)
+                mzdiff =math.fabs ((current_dMass + current_mz_offset*dHMass)/current_z  - dMeasuredMZ)
                 if mzdiff <= dMass_Tolerance_Fragment_Ions :
-                    dErrorDa = dMeasuredMZ - current_dMass/current_z
-                    if (NewMatchedFragment (peakmatch_list[i], str(current_mz_offset), str(current_sFragmentFormula),str(current_smiles) )) :
+                    dErrorDa = dMeasuredMZ - ((current_dMass+current_mz_offset*dHMass)/current_z)
+                    bNewFragment = NewMatchedFragment (peakmatch_list[i], str(current_mz_offset), str(current_sFragmentFormula),str(current_smiles) )
+                    if (bNewFragment) :
                         peakmatch_list[i].append([str(current_mz_offset),str(current_sFragmentFormula),str(current_smiles),sBondInfo,dErrorDa])
                     bFindPeak = True
                     break
-    return bFindPeak
+    return bFindPeak, bNewFragment
 
 
 def DumpOneFragment(current_fragment_mol, FragmentBonds_list) :
@@ -227,9 +230,12 @@ def TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, iDepth, peakmatch_
                         new_fragment = [Chem.EditableMol(current_fragments_list[i]), FragmentBonds_list, [], iCurrentFatherIdx, iFatherDepth+1]
                     
                         current_dMass, current_sFragmentFormula, current_smiles=DumpOneFragment(current_fragments_list[i], FragmentBonds_list)
-                        bFindPeak=MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, FragmentBonds_list)
+                        bFindPeak, bNewFragment=MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, FragmentBonds_list)
                         #if (bFindPeak) :
-                        if (True):
+                        #if ((bFindPeak) and not(bNewFragment)) :
+                        #    continue
+                        #else :
+                        if (True) :
                             FragmentTree_list.append(new_fragment)
                             if ((iFatherDepth+1) < iDepth) :
                                 iCurrent_FatherIdx_list.append(iCurrentFragmentNum)
@@ -252,8 +258,11 @@ def TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, iDepth, peakmatch_
                         if ((iFatherDepth+1) < iDepth) :
                             iCurrent_FatherIdx_list.append(iCurrentFragmentNum)
                         current_dMass, current_sFragmentFormula, current_smiles=DumpOneFragment(current_fragments_list[i], FragmentBonds_list)
-                        bFindPeak = MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, FragmentBonds_list)
+                        bFindPeak, bNewFragment = MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, FragmentBonds_list)
                         #if (bFindPeak) :
+                        #if ((bFindPeak) and not(bNewFragment)) :
+                        #    continue
+                        #else :
                         if (True) :
                             FragmentTree_list.append(new_fragment)
                             if ((iFatherDepth+1) < iDepth) :
@@ -261,7 +270,7 @@ def TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, iDepth, peakmatch_
 
 def ExhaustBonds(sInchiInfo, allPeaks_list, peakmatch_list) :
     current_mol = Chem.MolFromInchi(sInchiInfo)
-    current_sFragmentFormula = Descriptors.ExactMolWt(current_mol)
+    current_sFragmentFormula = AllChem.CalcMolFormula(current_mol)
     current_smiles = Chem.MolToSmiles(current_mol)
     print Descriptors.ExactMolWt(current_mol), "NULL", AllChem.CalcMolFormula(current_mol)
     MapMass(Descriptors.ExactMolWt(current_mol), allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, [])
@@ -307,8 +316,8 @@ def main(argv=None):
         print eachInchiFileName
         HandleInchi(eachInchiFileName, output_file)
         print "***********************************************************"
-
-    output_file.close()
+        #os.remove(eachInchiFileName)
+        output_file.close()
 
 
 
