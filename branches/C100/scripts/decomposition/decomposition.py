@@ -204,7 +204,30 @@ def RemoveBonds(current_mol, bonds_list) :
         bValidOperation = False
     #print len( Chem.GetMolFrags(current_mol, asMols=True)  )
     return current_fragments_list, bValidOperation
-    
+
+def TreeLikeBreakBondsDepthFirst(current_mol, iBondsNum, allPeaks_list, iDepth, peakmatch_list) :
+    root_node = [Chem.EditableMol(current_mol), [], [], -1, 0] # editable_mol,list of list of removed bonds,kids,father Idx,depth
+    current_ring_bonds_list, current_linear_bonds_list = ClassifyBonds(root_node[0].GetMol())
+    current_ringbonds_iter = itertools.combinations(current_ring_bonds_list, 2)
+    current_ringbonds_combination_list = list(current_ringbonds_iter)
+    unprocessedKid = []
+    storedNodes = [[root_node, current_ring_bonds_list, current_ringbonds_combination_list, unprocessedKid]]
+    while (len(storedNodes) > 0) :
+        if (len(storedNodes[-1][3]) > 0) : # unprocessed kid
+            
+            del storedNodes[-1][3][0]
+        elif (len(storedNodes[-1][1]) > 0) : # linear bond
+            remove_bond = storedNodes[-1][1][0]
+            
+            del storedNodes[-1][1][0]
+        elif (len(storedNodes[-1][2]) > 0) : # ring bonds
+            remove_first_bond  = storedNodes[-1][2][0][0]
+            remove_second_bond = storedNodes[-1][2][0][1]
+
+            del storedNodes[-1][2][0]
+        else :
+            del storedNodes[-1]
+
 
 def TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, iDepth, peakmatch_list) :
     FragmentTree_list = [[Chem.EditableMol(current_mol), [], [], -1, 0]] # editable_mol,list of list of removed bonds,kids,father Idx,depth 
