@@ -95,7 +95,10 @@ def parseInputFile(input_filename, output_filename) :
             else :
                 output_file.write(sUNIQUE_ID+"\t")
                 output_file.write(sInchi+"\t")
-                output_file.write(sDBLink[3:]+"\n")
+                if (sDBLink != "NA") :
+                    output_file.write(sDBLink[3:]+"\n")
+                else:
+                    output_file.write("NA\n")
              #   output_file.write("//\n")
                 sUNIQUE_ID = ""
                 sInchi     = ""
@@ -104,7 +107,7 @@ def parseInputFile(input_filename, output_filename) :
             sUNIQUE_ID = ExtractFeatureValue(each_line)
         if each_line.startswith("INCHI -"):
             sInchi     = ExtractFeatureValue(each_line)
-        if each_line.startswith("DBLINKS - "):
+        if each_line.startswith("DBLINKS - (PUBCHEM "):
             sDBLink   += "&"+ExtractFeatureValue(each_line)
 
     input_file.close()
