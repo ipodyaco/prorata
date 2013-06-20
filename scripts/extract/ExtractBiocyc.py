@@ -6,6 +6,10 @@ import sys, getopt, warnings, os, re
 from datetime import datetime, date, time
 import itertools, copy, math
 
+from rdkit import Chem
+from rdkit.Chem import Descriptors
+from rdkit.Chem import AllChem
+
 
 def parse_options(argv):
 
@@ -79,6 +83,12 @@ def ExtractFeatureValue (sFeature) :
     sValue  = RemoveTab(sValue)
     return sValue
 
+def CalCompoundMass(sInchi) :
+    #print sInchi
+    current_mol  = Chem.MolFromInchi(sInchi)
+    current_mass = Descriptors.ExactMolWt(current_mol)
+    return current_mass
+
 def parseInputFile(input_filename, output_filename) :
     input_file = open(input_filename)
     output_file= open(output_filename, "w")
@@ -91,22 +101,24 @@ def parseInputFile(input_filename, output_filename) :
         each_line = each_line.strip()
         if each_line == "//" :
             if ((sUNIQUE_ID == "") or (sInchi == "") or (sDBLink == "")) :
+                
                 print "one feature of", sUNIQUE_ID, sInchi, "is missed"
             else :
                 output_file.write(sUNIQUE_ID+"\t")
-                output_file.write(sInchi+"\t")
+                output_file.write(sInchi+"\t"+str(dMass)+"\t")
                 if (sDBLink != "NA") :
                     output_file.write(sDBLink[3:]+"\n")
                 else:
                     output_file.write("NA\n")
              #   output_file.write("//\n")
-                sUNIQUE_ID = ""
-                sInchi     = ""
-                sDBLink    = "NA"
+            sUNIQUE_ID = ""
+            sInchi     = ""
+            sDBLink    = "NA"
         if each_line.startswith("UNIQUE-ID -") :
             sUNIQUE_ID = ExtractFeatureValue(each_line)
         if each_line.startswith("INCHI -"):
             sInchi     = ExtractFeatureValue(each_line)
+            dMass      = CalCompoundMass(sInchi)
         if each_line.startswith("DBLINKS - (PUBCHEM "):
             sDBLink   += "&"+ExtractFeatureValue(each_line)
 
