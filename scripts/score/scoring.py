@@ -8,6 +8,8 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem import AllChem
 
+import metfrag
+
 def parse_options(argv):
     
     opts, args = getopt.getopt(argv[1:], "hm:p:o:e:",
@@ -118,7 +120,8 @@ def ReadCompoundFile(compound_filename) :
     return compound_list
 
 def ReadRealHit(realhit_filename):
-
+    
+    dProtonMass = 1.007825 # proton mass
     bPeakBegin = False
     allPeaks_list = []
     precursor_mz = -1
@@ -150,22 +153,104 @@ def ReadRealHit(realhit_filename):
                 bPeakBegin = False
 
     realhit_file.close()
-    return precursor_mz, allPeaks_list
+    return precursor_mz-dProtonMass, allPeaks_list, s_chemical_structure
+
+def BinarySearch_Upper(target_list, bounder_value):
+    ele_num = len(target_list)
+    upper_index = ele_num-1
+    if (target_list[upper_index] < bounder_value):
+        return upper_index
+    lower_index = 0
+    if (target_list[lower_index] > bounder_value) :
+        return -1
+    while ((upper_index - lower_index)>1):
+        middle_index = (lower_index + upper_index)/2
+        if (target_list[middle_index]> bounder_value ) :
+            upper_index = middle_index
+        else :
+            lower_index = middle_index
+
+    return lower_index
+    
+def BinarySearch_Lower(target_list, bounder_value):
+    ele_num = len(target_list)
+    upper_index = ele_num-1
+    if (target_list[upper_index] < bounder_value):
+        return -1
+    lower_index = 0
+    if (target_list[lower_index] > bounder_value) :
+        return lower_index
+    while ((upper_index - lower_index)>1):
+        middle_index = (lower_index + upper_index)/2
+        if (target_list[middle_index]>= bounder_value ) : # !!!!
+            upper_index = middle_index
+        else :
+            lower_index = middle_index
+    return upper_index
+
+def GetRelatedCompound(Compound_list, precursor_mz, precursor_accuracy):
+    compound_mass_list = [each_compound[2] for each_compound in Compound_list]
+    upper_compound_mass = precursor_mz + precursor_accuracy
+    lower_compound_mass = precursor_mz - precursor_accuracy
+    upper_compound_index=BinarySearch_Upper(compound_mass_list, upper_compound_mass)
+    #print upper_compound_index, compound_mass_list[upper_compound_index], upper_compound_mass, compound_mass_list[upper_compound_index+1]
+    lower_compound_index=BinarySearch_Lower(compound_mass_list, lower_compound_mass)
+    #print lower_compound_index, compound_mass_list[lower_compound_index-1], lower_compound_mass, compound_mass_list[lower_compound_index] 
+    QueryCompound_list = []
+    if ((lower_compound_index != -1) and (upper_compound_index != -1)) :
+        QueryCompound_list = Compound_list[lower_compound_index : upper_compound_index+1]
+    return QueryCompound_list
+
+def OrganizeCompounds(Compound_Scores_list, output_filename, realhit_filename) :
+    max_weight = max([each_compound_score[0] for each_compound_score in Compound_Scores_list ])
+    max_energy = max([each_compound_score[1] for each_compound_score in Compound_Scores_list ])
+    if (max_weight == 0) :
+        max_weight = 1
+    if (max_energy == 0) :
+        max_energy = 1
+    for each_compound_score in Compound_Scores_list :
+        combine_score = each_compound_score[0]/max_weight - each_compound_score[1]/(2*max_energy)
+        each_compound_score.append(combine_score)
+    Compound_Scores_list.sort(key=lambda e:e[-1], reverse=True)
+    ID_list = [each_compound_score[2] for each_compound_score in Compound_Scores_list ]
+    realhit_rank = ID_list.index("RealHit") + 1
+    output_file  = open(output_filename, "w")
+    output_file.write(">"+str(realhit_rank)+"\t"+realhit_filename+"\n")
+    current_rank = 1
+    for each_compound_score in Compound_Scores_list :
+        output_file.write(str(current_rank))
+        for each_item in each_compound_score:
+            output_file.write("\t"+str(each_item))
+        output_file.write("\n")
+        current_rank += 1
+    output_file.close()
 
 def main(argv=None):
 
+    precursor_accuracy = 0.02
     # try to get arguments and error handling
     if argv is None:
         argv = sys.argv
        		 # parse options
         [realhit_filename, compound_filename, output_filename, energy_filename] = parse_options(argv)  
 
+    Compound_Scores_list = []
     sEnergy_Bond_dict = ReadEnergyFile(energy_filename)
     #print sEnergy_Bond_dict.items()
     Compound_list    = ReadCompoundFile(compound_filename)
-    #print Compound_list[30]
-    precursor_mz, allPeaks_list = ReadRealHit(realhit_filename)
+    #print Compound_list[1]
+    precursor_mz, allPeaks_list, s_chemical_structure = ReadRealHit(realhit_filename)
     #print precursor_mz, allPeaks_list     
+    QueryCompound_list = GetRelatedCompound(Compound_list, precursor_mz, precursor_accuracy)
+    for each_compound in QueryCompound_list :
+        current_mol = Chem.MolFromInchi(each_compound[1])
+        dCurrentWeight, dCurrentEnergy = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
+        Compound_Scores_list.append([dCurrentWeight, dCurrentEnergy, each_compound[0], each_compound[1], each_compound[3]])
+        dCurrentWeight, dCurrentEnergy
+    real_mol = Chem.MolFromInchi(s_chemical_structure)
+    dRealWeight, dRealEnergy = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, real_mol)
+    Compound_Scores_list.append([dRealWeight, dRealEnergy, "RealHit", s_chemical_structure, "NA"])
+    OrganizeCompounds(Compound_Scores_list, output_filename, realhit_filename)
 
 ## If this program runs as standalone, then go to main.
 if __name__ == "__main__":
