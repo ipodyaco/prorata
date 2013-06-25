@@ -23,7 +23,7 @@ def MetFragScore(sEnergy_Bond_dict, allPeaks_list, current_mol) :
             dCurrentWeight  += pow(allPeaks_list[i][1], 0.6) * pow(allPeaks_list[i][0], 3)
     if (iIdentifiedPeak > 0) :
         dCurrentEnergy = dCurrentEnergy / iIdentifiedPeak 
-    return dCurrentWeight, dCurrentEnergy
+    return dCurrentWeight, dCurrentEnergy, iIdentifiedPeak
 
 def TreeLikeBreakBondsDepthFirst(current_mol, iBondsNum, allPeaks_list, iDepth, peakmatch_list, sEnergy_Bond_dict) :
     root_node = [Chem.EditableMol(current_mol),[],0] # editable_mol,list of list of removed bonds, depth

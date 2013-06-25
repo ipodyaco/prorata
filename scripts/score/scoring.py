@@ -244,12 +244,11 @@ def main(argv=None):
     QueryCompound_list = GetRelatedCompound(Compound_list, precursor_mz, precursor_accuracy)
     for each_compound in QueryCompound_list :
         current_mol = Chem.MolFromInchi(each_compound[1])
-        dCurrentWeight, dCurrentEnergy = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
-        Compound_Scores_list.append([dCurrentWeight, dCurrentEnergy, each_compound[0], each_compound[1], each_compound[3]])
-        dCurrentWeight, dCurrentEnergy
+        dCurrentWeight, dCurrentEnergy, iIdentifiedPeak = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
+        Compound_Scores_list.append([dCurrentWeight, dCurrentEnergy, each_compound[0], each_compound[1], each_compound[3], iIdentifiedPeak])
     real_mol = Chem.MolFromInchi(s_chemical_structure)
-    dRealWeight, dRealEnergy = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, real_mol)
-    Compound_Scores_list.append([dRealWeight, dRealEnergy, "RealHit", s_chemical_structure, "NA"])
+    dRealWeight, dRealEnergy, iIdentifiedPeak  = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, real_mol)
+    Compound_Scores_list.append([dRealWeight, dRealEnergy, "RealHit", s_chemical_structure, "NA", iIdentifiedPeak])
     OrganizeCompounds(Compound_Scores_list, output_filename, realhit_filename)
 
 ## If this program runs as standalone, then go to main.
