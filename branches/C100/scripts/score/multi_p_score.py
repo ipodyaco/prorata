@@ -7,23 +7,25 @@ from multiprocessing import Pool
 
 def parse_options(argv):
     
-    opts, args = getopt.getopt(argv[1:], "hw:p:o:e:",
+    opts, args = getopt.getopt(argv[1:], "hw:p:o:e:n:",
                                     ["help",
                                      "input-dir",
                                      "compound-filename",
 				                     "output-dir",
-                                     "energy-filename"])
+                                     "energy-filename",
+                                     "process-number"])
 
     # Default working dir and config file
     input_foldername  = ""
     compound_filename = ""
     output_foldername   = ""
     energy_filename   = ""
+    process_number    = 0
 
     # Basic options
     for option, value in opts:
         if option in ("-h", "--help"):
-            print "-w input_dir -p compound_filename -o folder_dir -e energy_filename"
+            print "-w input_dir -p compound_filename -o folder_dir -e energy_filename -n process_number"
             sys.exit(0)
         if option in ("-w", "--input-dir"):
             input_foldername  = value
@@ -37,13 +39,15 @@ def parse_options(argv):
                 output_foldername += "/"
         if option in ("-e", "--energy-filename"):
             energy_filename   = value
+        if option in ("-n", "--process-number"):
+            process_number = int(value)
 
-    if ((input_foldername == "") or (compound_filename == "") or (output_foldername == "") or (energy_filename == "")) :
+    if ((input_foldername == "") or (compound_filename == "") or (output_foldername == "") or (energy_filename == "") or (process_number == 0)) :
         print "please specify input dir, compound file, output dir, and energy file"
         sys.exit(1)
     
     realhit_filename_list = get_file_list_with_ext(input_foldername, "txt")
-    return [realhit_filename_list, compound_filename, output_foldername, energy_filename]
+    return [realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number]
 
 
 ## Get file(s) list in working dir with specific file extension
@@ -74,13 +78,14 @@ def get_file_list_with_ext(working_dir, file_ext):
     return file_list
 
 def HandleOneRealHit (script_dir, realhit_filename, compound_filename, output_filename, energy_filename) :
-    command_str = "python "+script_dir+os.sep+"scoring.py -m "+realhit_filename+" -p "+compound_filename+" -o "+output_filename+" -e "+energy_filename
+    # change scoring_A.py to scoring.py will go to metfrag scoring function
+    command_str = "python "+script_dir+os.sep+"scoring_A.py -m "+realhit_filename+" -p "+compound_filename+" -o "+output_filename+" -e "+energy_filename
     #print command_str
     os.system(command_str)
 
-def HandleAllRealHits(script_dir, realhit_filename_list, compound_filename, output_foldername, energy_filename):
+def HandleAllRealHits(script_dir, realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number):
    
-    mypool = Pool(processes=4)
+    mypool = Pool(processes=process_number)
 
     for each_realhit_filename in realhit_filename_list :
         current_output_filename = output_foldername + os.path.basename(each_realhit_filename) + ".output.txt"
@@ -98,10 +103,10 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
        		 # parse options
-        [realhit_filename_list, compound_filename, output_foldername, energy_filename] = parse_options(argv)
+        [realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number] = parse_options(argv)
         script_path = sys.argv[0]
         script_dir  = os.path.dirname(os.path.abspath(script_path))
-        HandleAllRealHits(script_dir, realhit_filename_list, compound_filename, output_foldername, energy_filename)
+        HandleAllRealHits(script_dir, realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number)
 
 
 
