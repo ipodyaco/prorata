@@ -8,7 +8,7 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem import AllChem
 
-import metfrag
+import weightedscore
 
 def parse_options(argv):
     
@@ -108,7 +108,7 @@ def ReadCompoundFile(compound_filename) :
         if (each_line == "") :
             continue
         current_compound_info = each_line.split("\t")
-        if (len(current_compound_info) != 4) :
+        if (len(current_compound_info) != 5) :
             print "illegal compound", each_line
             sys.exit(1)
         else:
@@ -225,6 +225,44 @@ def OrganizeCompounds(Compound_Scores_list, output_filename, realhit_filename) :
         current_rank += 1
     output_file.close()
 
+def NormalizeIntensity(allPeaks_list) :
+    max_intensity = max([each_peak[1] for each_peak in allPeaks_list])
+    for i in range(len(allPeaks_list)) :
+        allPeaks_list[i][1] = allPeaks_list[i][1]/max_intensity
+    return allPeaks_list
+
+def RankScores(Compound_Scores_list, output_filename, realhit_filename) :
+    Compound_Scores_list.sort(key=lambda e:e[0], reverse=True)
+    ID_list = [each_compound_score[2] for each_compound_score in Compound_Scores_list ]
+    realhit_index = ID_list.index("RealHit") 
+    realhit_score = Compound_Scores_list[realhit_index][0]
+   # print realhit_score
+    output_str = "" 
+    iRealhitRank = 0
+    current_rank = 1
+    for i in range(len(Compound_Scores_list)):
+        dCurrentScore = Compound_Scores_list[i][0]
+        if (i==0) :
+            current_rank = 1
+            dPreviousScore = dCurrentScore
+        else :
+            if (dCurrentScore < dPreviousScore):
+                current_rank = i+1
+            dCurrentScore = dPreviousScore
+        if (i == realhit_index) :
+            iRealhitRank = current_rank
+            #print iRealhitRank
+        output_str +=str(current_rank)
+        for each_item in Compound_Scores_list[i] :
+            output_str += "\t"+str(each_item)
+        output_str += "\n"
+    output_file = open(output_filename, "w")
+    output_file.write(">"+str(iRealhitRank)+"\t"+realhit_filename+"\n")
+    output_file.write(output_str)
+    output_file.close()
+
+
+
 def main(argv=None):
 
     precursor_accuracy = 0.5
@@ -240,16 +278,20 @@ def main(argv=None):
     Compound_list    = ReadCompoundFile(compound_filename)
     #print Compound_list[1]
     precursor_mz, allPeaks_list, s_chemical_structure = ReadRealHit(realhit_filename)
+    allPeaks_list = NormalizeIntensity(allPeaks_list)
+    #print allPeaks_list
     #print precursor_mz, allPeaks_list     
     QueryCompound_list = GetRelatedCompound(Compound_list, precursor_mz, precursor_accuracy)
     for each_compound in QueryCompound_list :
         current_mol = Chem.MolFromInchi(each_compound[1])
-        dCurrentWeight, dCurrentEnergy, iIdentifiedPeak = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
-        Compound_Scores_list.append([dCurrentWeight, dCurrentEnergy, each_compound[0], each_compound[1], each_compound[3], iIdentifiedPeak])
+        #dCurrentWeight, dCurrentEnergy, iIdentifiedPeak = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
+        dCurrentScore, dCurrentEnergy, iIdentifiedPeak = weightedscore.OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
+        Compound_Scores_list.append([dCurrentScore, dCurrentEnergy, each_compound[0], each_compound[1], each_compound[3], iIdentifiedPeak])
     real_mol = Chem.MolFromInchi(s_chemical_structure)
-    dRealWeight, dRealEnergy, iIdentifiedPeak  = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, real_mol)
-    Compound_Scores_list.append([dRealWeight, dRealEnergy, "RealHit", s_chemical_structure, "NA", iIdentifiedPeak])
-    OrganizeCompounds(Compound_Scores_list, output_filename, realhit_filename)
+    #dRealWeight, dRealEnergy, iIdentifiedPeak  = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, real_mol)
+    dRealScore, dRealEnergy, iIdentifiedPeak    = weightedscore.OwnScore(sEnergy_Bond_dict, allPeaks_list, real_mol)
+    Compound_Scores_list.append([dRealScore, dRealEnergy, "RealHit", s_chemical_structure, "NA", iIdentifiedPeak])
+    RankScores(Compound_Scores_list, output_filename, realhit_filename)
 
 ## If this program runs as standalone, then go to main.
 if __name__ == "__main__":
