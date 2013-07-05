@@ -283,7 +283,13 @@ def main(argv=None):
     #print precursor_mz, allPeaks_list     
     QueryCompound_list = GetRelatedCompound(Compound_list, precursor_mz, precursor_accuracy)
     for each_compound in QueryCompound_list :
+        #print each_compound[1]
         current_mol = Chem.MolFromInchi(each_compound[1])
+        current_fragments_list = Chem.GetMolFrags(current_mol, asMols=True, sanitizeFrags=False)
+        if (len(current_fragments_list) != 1) :
+            print "filter", each_compound[1]
+            continue
+        #print current_mol.GetNumBonds()
         #dCurrentWeight, dCurrentEnergy, iIdentifiedPeak = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
         dCurrentScore, dCurrentEnergy, iIdentifiedPeak = weightedscore.OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
         Compound_Scores_list.append([dCurrentScore, dCurrentEnergy, each_compound[0], each_compound[1], each_compound[3], iIdentifiedPeak])
