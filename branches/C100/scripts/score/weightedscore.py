@@ -182,6 +182,7 @@ def RemoveBonds(current_mol, bonds_list) :
         em.RemoveBond(idx_beginAtom, idx_endAtom)
     current_modified_mol = em.GetMol()
     current_fragments_list = Chem.GetMolFrags(current_modified_mol, asMols=True, sanitizeFrags=False)
+    #print len(current_fragments_list)
     if len(current_fragments_list) == 2 :
         bValidOperation = True
     else :
