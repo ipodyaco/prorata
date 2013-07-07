@@ -7,8 +7,9 @@ from multiprocessing import Pool
 
 def parse_options(argv):
     
-    opts, args = getopt.getopt(argv[1:], "hw:p:o:e:n:",
+    opts, args = getopt.getopt(argv[1:], "hvw:p:o:e:n:",
                                     ["help",
+                                     "verbose",
                                      "input-dir",
                                      "compound-filename",
 				                     "output-dir",
@@ -21,12 +22,15 @@ def parse_options(argv):
     output_foldername   = ""
     energy_filename   = ""
     process_number    = 0
+    bSpectrumDetails  = False
 
     # Basic options
     for option, value in opts:
         if option in ("-h", "--help"):
-            print "-w input_dir -p compound_filename -o folder_dir -e energy_filename -n process_number"
+            print "-w input_dir -p compound_filename -o folder_dir -e energy_filename -n process_number -v verbose"
             sys.exit(0)
+        if option in ("-v", "--verbose") :
+            bSpectrumDetails = True
         if option in ("-w", "--input-dir"):
             input_foldername  = value
             if (input_foldername[-1:]!="/") and (input_foldername != "") :
@@ -47,7 +51,7 @@ def parse_options(argv):
         sys.exit(1)
     
     realhit_filename_list = get_file_list_with_ext(input_foldername, "txt")
-    return [realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number]
+    return [realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails]
 
 
 ## Get file(s) list in working dir with specific file extension
@@ -77,20 +81,24 @@ def get_file_list_with_ext(working_dir, file_ext):
 
     return file_list
 
-def HandleOneRealHit (script_dir, realhit_filename, compound_filename, output_filename, energy_filename) :
+def HandleOneRealHit (script_dir, realhit_filename, compound_filename, output_filename, energy_filename, bSpectrumDetails) :
     # change scoring_A.py to scoring.py will go to metfrag scoring function
-    command_str = "python "+script_dir+os.sep+"scoring_A.py -m "+realhit_filename+" -p "+compound_filename+" -o "+output_filename+" -e "+energy_filename
+    if (bSpectrumDetails) :
+        vstr = " -v "
+    else :
+        vstr = ""
+    command_str = "python "+script_dir+os.sep+"scoring_A.py -m "+realhit_filename+" -p "+compound_filename+" -o "+output_filename+" -e "+energy_filename + vstr
     #print command_str
     os.system(command_str)
 
-def HandleAllRealHits(script_dir, realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number):
+def HandleAllRealHits(script_dir, realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails):
    
     mypool = Pool(processes=process_number)
 
     for each_realhit_filename in realhit_filename_list :
         current_output_filename = output_foldername + os.path.basename(each_realhit_filename) + ".output.txt"
         #print script_dir+os.sep, current_output_filename     
-        result = mypool.apply_async(HandleOneRealHit,(script_dir,each_realhit_filename,compound_filename,current_output_filename,energy_filename))
+        result = mypool.apply_async(HandleOneRealHit,(script_dir,each_realhit_filename,compound_filename,current_output_filename,energy_filename, bSpectrumDetails))
     mypool.close()
     mypool.join()
     if result.successful():
@@ -103,10 +111,10 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
        		 # parse options
-        [realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number] = parse_options(argv)
+        [realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails] = parse_options(argv)
         script_path = sys.argv[0]
         script_dir  = os.path.dirname(os.path.abspath(script_path))
-        HandleAllRealHits(script_dir, realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number)
+        HandleAllRealHits(script_dir, realhit_filename_list, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails)
 
 
 

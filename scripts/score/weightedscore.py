@@ -23,14 +23,22 @@ def OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol) :
     peakmatch_list = [[] for each_peak in allPeaks_list]
     ExhaustBonds(current_mol, allPeaks_list, peakmatch_list, sEnergy_Bond_dict)
    # print peakmatch_list
+    sAnnotation_list = []
+    sAnnotation_list.append("m/z\tnormalized_int\trel_int\tH_added\tformula\tSMILES\types_bonds_cleaved\terror_Da")
     for i in range(len(allPeaks_list)) :
+        sCurrentAnnotation   = str(allPeaks_list[i][0])+"\t"+str(allPeaks_list[i][1])+"\t"+str(allPeaks_list[i][2])
         if peakmatch_list[i] :
-            iIdentifiedPeak += 1
+            iIdentifiedPeak += 1 
             dCurrentEnergy  += peakmatch_list[i][0][5]
             dErrorDa         = peakmatch_list[i][0][4]
             dSubScore        = peakmatch_list[i][0][6]
             dCurrentScore   += dSubScore
-    return dCurrentScore, dCurrentEnergy, iIdentifiedPeak
+            sCurrentAnnotation += "\t" + str(peakmatch_list[i][0][0]) + "\t" + str(peakmatch_list[i][0][1])+"\t"+str(peakmatch_list[i][0][2])
+            sCurrentAnnotation += "\t" + str(peakmatch_list[i][0][3]) + "\t" + str(peakmatch_list[i][0][4])
+        else :
+            sCurrentAnnotation += "\tNA"
+        sAnnotation_list.append(sCurrentAnnotation)
+    return dCurrentScore, dCurrentEnergy, iIdentifiedPeak, sAnnotation_list
 
 
 def TreeLikeBreakBondsDepthFirst(current_mol, iBondsNum, allPeaks_list, iDepth, peakmatch_list, sEnergy_Bond_dict, energy_denominator) :
