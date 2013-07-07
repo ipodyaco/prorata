@@ -12,8 +12,9 @@ import weightedscore
 
 def parse_options(argv):
     
-    opts, args = getopt.getopt(argv[1:], "hm:p:o:e:",
+    opts, args = getopt.getopt(argv[1:], "hvm:p:o:e:",
                                     ["help",
+                                     "verbose",
                                      "realhit-filename",
                                      "compound-filename",
 				                     "output-filename",
@@ -25,11 +26,12 @@ def parse_options(argv):
     compound_filename = ""
     output_filename   = ""
     energy_filename   = ""
+    bSpectrumDetails  = False
 
     # Basic options
     for option, value in opts:
         if option in ("-h", "--help"):
-            print "-m realhit_filename -p compound_filename -o output_filename -e energy_filename"
+            print "-m realhit_filename -p compound_filename -o output_filename -e energy_filename -v verbose"
             sys.exit(0)
         if option in ("-m", "--realhit-filename"):
             realhit_filename  = value
@@ -39,12 +41,14 @@ def parse_options(argv):
             output_filename   = value
         if option in ("-e", "--energy-filename"):
             energy_filename   = value
+        if option in ("-v", "--verbose") :
+            bSpectrumDetails  = True
 
     if ((realhit_filename == "") or (compound_filename == "") or (output_filename == "") or (energy_filename == "")) :
         print "please specify realhit file, compound file, output file, and energy file"
         sys.exit(1)
     
-    return [realhit_filename, compound_filename, output_filename, energy_filename]
+    return [realhit_filename, compound_filename, output_filename, energy_filename, bSpectrumDetails]
 
 ## Get file(s) list in working dir with specific file extension
 def get_file_list_with_ext(working_dir, file_ext):
@@ -231,7 +235,7 @@ def NormalizeIntensity(allPeaks_list) :
         allPeaks_list[i][1] = allPeaks_list[i][1]/max_intensity
     return allPeaks_list
 
-def RankScores(Compound_Scores_list, output_filename, realhit_filename) :
+def RankScores(Compound_Scores_list, output_filename, realhit_filename, bSpectrumDetails) :
     Compound_Scores_list.sort(key=lambda e:e[0], reverse=True)
     ID_list = [each_compound_score[2] for each_compound_score in Compound_Scores_list ]
     realhit_index = ID_list.index("RealHit") 
@@ -253,9 +257,12 @@ def RankScores(Compound_Scores_list, output_filename, realhit_filename) :
             iRealhitRank = current_rank
             #print iRealhitRank
         output_str +=str(current_rank)
-        for each_item in Compound_Scores_list[i] :
+        for each_item in Compound_Scores_list[i][:-1] :
             output_str += "\t"+str(each_item)
         output_str += "\n"
+        if (bSpectrumDetails) :
+            for each_annontation in Compound_Scores_list[i][-1] :
+                output_str += each_annontation + "\n"
     output_file = open(output_filename, "w")
     output_file.write(">"+str(iRealhitRank)+"\t"+realhit_filename+"\n")
     output_file.write(output_str)
@@ -270,7 +277,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
        		 # parse options
-        [realhit_filename, compound_filename, output_filename, energy_filename] = parse_options(argv)  
+        [realhit_filename, compound_filename, output_filename, energy_filename, bSpectrumDetails] = parse_options(argv)  
 
     Compound_Scores_list = []
     sEnergy_Bond_dict = ReadEnergyFile(energy_filename)
@@ -291,13 +298,13 @@ def main(argv=None):
             continue
         #print current_mol.GetNumBonds()
         #dCurrentWeight, dCurrentEnergy, iIdentifiedPeak = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
-        dCurrentScore, dCurrentEnergy, iIdentifiedPeak = weightedscore.OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
-        Compound_Scores_list.append([dCurrentScore, dCurrentEnergy, each_compound[0], each_compound[1], each_compound[3], iIdentifiedPeak])
+        dCurrentScore, dCurrentEnergy, iIdentifiedPeak, sAnnotation_list= weightedscore.OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
+        Compound_Scores_list.append([dCurrentScore, dCurrentEnergy, each_compound[0], each_compound[1], each_compound[3], iIdentifiedPeak, sAnnotation_list])
     real_mol = Chem.MolFromInchi(s_chemical_structure)
     #dRealWeight, dRealEnergy, iIdentifiedPeak  = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, real_mol)
-    dRealScore, dRealEnergy, iIdentifiedPeak    = weightedscore.OwnScore(sEnergy_Bond_dict, allPeaks_list, real_mol)
-    Compound_Scores_list.append([dRealScore, dRealEnergy, "RealHit", s_chemical_structure, "NA", iIdentifiedPeak])
-    RankScores(Compound_Scores_list, output_filename, realhit_filename)
+    dRealScore, dRealEnergy, iIdentifiedPeak, sAnnotation_list = weightedscore.OwnScore(sEnergy_Bond_dict, allPeaks_list, real_mol)
+    Compound_Scores_list.append([dRealScore, dRealEnergy, "RealHit", s_chemical_structure, "NA", iIdentifiedPeak, sAnnotation_list])
+    RankScores(Compound_Scores_list, output_filename, realhit_filename, bSpectrumDetails)
 
 ## If this program runs as standalone, then go to main.
 if __name__ == "__main__":
