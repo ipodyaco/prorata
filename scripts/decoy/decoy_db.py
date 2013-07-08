@@ -49,14 +49,14 @@ def parse_options(argv):
 
     return (input_filename, output_filename, iDecoyNumber)
 
-def CallOMG(ori_formula, temp_filename) :
+def CallOMG(ori_formula, temp_filename, iAtomNum) :
 #    command_str = os.environ["JAVA_HOME"]+"/bin/java -jar PMG_1.0.jar "+ ori_formula +" -filter -p 1 -o "+temp_filename
     command_str = "java -jar " +  os.environ["OMG_HOME"]  + "/OMG.jar -ec "+ ori_formula+" -o " + temp_filename
     myarg = shlex.split(command_str)
     #print myarg
     #os.system(command_str)
     proc = subprocess.Popen(myarg)
-    time.sleep(30)
+    time.sleep(5*iAtomNum)
     pstatus = proc.poll()
     if pstatus is None:
         proc.kill()
@@ -66,13 +66,14 @@ def GenerateDecoy(inchi_ori, iDecoyNumber, temp_filename) :
     decoy_list = []
     inchi_list = [inchi_ori]
     ori_mol = Chem.MolFromInchi(inchi_ori)
+    iAtomNum= GetNumAtoms(ori_mol)
     ori_formula = AllChem.CalcMolFormula(ori_mol)
     ori_fragments_list = Chem.GetMolFrags(ori_mol, asMols=True, sanitizeFrags=False)
     if (len(ori_fragments_list) == 1) :
         bCheckFragmentNumber = True
     else:
         bCheckFragmentNumber = False
-    CallOMG(ori_formula, temp_filename)
+    CallOMG(ori_formula, temp_filename, iAtomNum)
     decoy_mol_list = Chem.SDMolSupplier(temp_filename) 
     used_decoy_count = 0
     for each_decoy_mol in decoy_mol_list :
