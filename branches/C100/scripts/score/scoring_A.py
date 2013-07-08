@@ -109,7 +109,7 @@ def ReadCompoundFile(compound_filename) :
     compound_file = open(compound_filename)
     for each_line in compound_file :
         each_line = each_line.strip()
-        if (each_line == "") :
+        if ((each_line == "") or (each_line.startswith("#"))) :
             continue
         current_compound_info = each_line.split("\t")
         if (len(current_compound_info) != 5) :
