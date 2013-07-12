@@ -56,7 +56,8 @@ def call_metfrag(working_dir, output_dir, iThreadNumber, dMsAccuracy, path_metfr
     command_str  = os.environ["JAVA_HOME"]+"/bin/java -jar "+path_metfrag+"  -d sdf  -L "+working_dir+corename+".sdf"
     command_str += " -D " + working_dir+corename+".mb  -S  "+corename+" -R "+output_dir+"  -n "+exact_mass
     command_str += " -a " + str(dMsAccuracy) + " -T " + str(iThreadNumber) + " -B "
-    print command_str
+    #print command_str
+    os.system(command_str)
 
 def RunTest (working_dir, output_dir, realhit_filename, iThreadNumber, dMsAccuracy, path_metfrag) :
     realhit_file = open(realhit_filename)
