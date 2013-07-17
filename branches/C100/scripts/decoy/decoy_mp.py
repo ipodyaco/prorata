@@ -7,7 +7,7 @@ import time
 import itertools, copy, math
 import subprocess
 import shlex
-
+from multiprocessing import Pool
 
 from rdkit import Chem
 from rdkit.Chem import Descriptors
@@ -19,36 +19,33 @@ def parse_options(argv):
     opts, args = getopt.getopt(argv[1:], "hi:o:n:",
                                     ["help",
                              	     "input-file",
-	                			     "output-file",
+	                			     "output-dir",
                                      "decoy-number"])
 
-    output_filename = ""
+    output_dir = ""
     input_filename  = ""
     iDecoyNumber    = 0
 
     # Basic options
     for option, value in opts:
         if option in ("-h", "--help"):
-            print "-i input-file, -o output-file -n decoy-number"
+            print "-i input-file, -o output-dir -n decoy-number"
             sys.exit(1)
         if option in ("-i", "--input-file"):
             input_filename = value
-        if option in ("-o", "--output-file"):
-            output_filename = value
+        if option in ("-o", "--output-dir"):
+            output_dir = value
         if option in ("-n", "decoy-number"):
             iDecoyNumber = int(value)
 
-    if (input_filename == "") :
-        print "Please specify -i"
+    if ((input_filename == "")  or (output_dir == "")):
+        print "Please specify -i and -o"
         sys.exit(1)
     if (iDecoyNumber  <= 0) :
         print "Please specify -n"
         sys.exit(1)
-    if (output_filename == "") :
-        (inputFileNameRoot, inputFileNameExt) = os.path.splitext(input_filename)
-        output_filename = inputFileNameRoot + "_decoy" + inputFileNameExt
 
-    return (input_filename, output_filename, iDecoyNumber)
+    return (input_filename, output_dir, iDecoyNumber)
 
 def CallOMG(ori_formula, temp_filename) :
 #    command_str = os.environ["JAVA_HOME"]+"/bin/java -jar PMG_1.0.jar "+ ori_formula +" -filter -p 1 -o "+temp_filename
@@ -60,16 +57,17 @@ def CallOMG(ori_formula, temp_filename) :
     #os.system(command_str)
     proc = subprocess.Popen(myarg)
     while (True) :
-        time.sleep(30)
+        time.sleep(60)
         temp_file_size = os.path.getsize(temp_filename)
-        if (temp_file_size > 10000):
+        if (temp_file_size > 1000000):
             pstatus = proc.poll()
             if pstatus is None:
                 proc.kill()
             break
     proc.wait()
 
-def GenerateDecoy(inchi_ori, iDecoyNumber, temp_filename) :
+def GenerateDecoy_mp(sInternalID_ori, inchi_ori, iDecoyNumber, ori_line, output_dir, compound_info_list) :
+    temp_filename = output_dir+os.sep+sInternalID_ori+".sdf"
     decoy_list = []
     inchi_list = [inchi_ori]
     ori_mol = Chem.MolFromInchi(inchi_ori)
@@ -77,10 +75,10 @@ def GenerateDecoy(inchi_ori, iDecoyNumber, temp_filename) :
     ori_fragments_list = Chem.GetMolFrags(ori_mol, asMols=True, sanitizeFrags=False)
     if (len(ori_fragments_list) == 1) :
         bCheckFragmentNumber = True
-    else:
+    else :
         bCheckFragmentNumber = False
     CallOMG(ori_formula, temp_filename)
-    decoy_mol_list = Chem.SDMolSupplier(temp_filename) 
+    decoy_mol_list = Chem.SDMolSupplier(temp_filename)
     used_decoy_count = 0
     for each_decoy_mol in decoy_mol_list :
         if each_decoy_mol is None :
@@ -97,44 +95,47 @@ def GenerateDecoy(inchi_ori, iDecoyNumber, temp_filename) :
         if (used_decoy_count == iDecoyNumber) :
             break
     os.remove(temp_filename)
-    return decoy_list
+    output_file = open(output_dir+os.sep+sInternalID_ori+".txt", "w")
+    output_file.write(ori_line+"\n")
+    decoy_count = 0
+    for each_decoy_inchi in decoy_list :
+        sInternalID_decoy = "Decoy_"+str(decoy_count)+"_"+sInternalID_ori
+        decoy_count += 1
+        output_file.write(sInternalID_decoy+"\t"+each_decoy_inchi)
+        for i in range(2, len(compound_info_list)):
+            output_file.write("\t"+compound_info_list[i])
+        output_file.write("\n")
+    output_file.close()
+    
 
-def GenerateNewDB(input_filename, output_filename, iDecoyNumber) :
+def GenerateNewDB_mp(input_filename, output_dir, iDecoyNumber) :
     input_file = open(input_filename)
-    output_file= open(output_filename, "w")
-    temp_filename = os.path.dirname(output_filename)+os.sep+"omgtemp.sdf"
-
+    mypool = Pool(processes=4)
     for each_line in input_file:
         each_line = each_line.strip()
         if (each_line == "") :
             continue
-        output_file.write(each_line+"\n")
         if (each_line.startswith( "#")) :
             continue
         compound_info_list  = each_line.split("\t")
-        sInternalID_ori = compound_info_list[0] 
+        sInternalID_ori = compound_info_list[0]
         inchi_ori  = compound_info_list[1]
-        decoy_compound_list = GenerateDecoy(inchi_ori, iDecoyNumber, temp_filename)
-        decoy_count = 0
-        for each_decoy_inchi in decoy_compound_list :
-            sInternalID_decoy = "Decoy_"+str(decoy_count)+"_"+sInternalID_ori
-            decoy_count += 1
-            output_file.write(sInternalID_decoy+"\t"+each_decoy_inchi)
-            for i in range(2, len(compound_info_list)):
-                output_file.write("\t"+compound_info_list[i])
-            output_file.write("\n")
+        result = mypool.apply_async(GenerateDecoy_mp, (sInternalID_ori, inchi_ori, iDecoyNumber, each_line, output_dir, compound_info_list))
     input_file.close()
-    output_file.close()
-
+    mypool.close()
+    mypool.join()
+    if result.successful():
+        print "successful"
+        
 def main(argv=None):
 
     # try to get arguments and error handling
     if argv is None:
         argv = sys.argv
        		 # parse options
-        input_filename ,  output_filename, iDecoyNumber = parse_options(argv)  
+        input_filename ,  output_dir, iDecoyNumber = parse_options(argv)  
 
-    GenerateNewDB(input_filename, output_filename, iDecoyNumber)
+    GenerateNewDB_mp(input_filename, output_dir, iDecoyNumber)
 
 
 ## If this program runs as standalone, then go to main.

@@ -121,7 +121,8 @@ def evalue_one_prediction(scan_id, scan_inchi, working_dir, output_dir) :
             realhit_score= dScore
     if (realhit_rank == 0) :
         print "can't find the realhit", scan_id, scan_inchi
-        sys.exit(1)
+        realhit_rank = len(all_results_list) +1
+        realhit_score= -100.0
     organized_result_file.write(">"+str(realhit_rank)+"\t"+scan_id+"\t"+str(realhit_score)+"\t"+scan_inchi+"\n")
     organized_result_file.write(output_details)
     organized_result_file.close()
