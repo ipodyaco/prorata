@@ -101,8 +101,9 @@ def evalue_one_prediction(scan_id, scan_inchi, working_dir, output_dir) :
         dScore = float(current_sdf_mol.GetProp("Score"))
         sInchi = current_sdf_mol.GetProp("Inchi")
         sUniqueID = current_sdf_mol.GetProp("UniqueID")
+        sNumPeakExplained = current_sdf_mol.GetProp("NoPeaksExplained")
         #print  sUniqueID, sInchi,  dScore
-        all_results_list.append([dScore, sUniqueID, sInchi])
+        all_results_list.append([dScore, sUniqueID, sInchi, sNumPeakExplained])
     all_results_list.sort(key=lambda e:e[0], reverse=True)
     realhit_rank = 0
     output_details = ""
@@ -110,11 +111,12 @@ def evalue_one_prediction(scan_id, scan_inchi, working_dir, output_dir) :
         dScore    = all_results_list[i][0]
         sUniqueID = all_results_list[i][1]
         sInchi    = all_results_list[i][2]
+        sNumPeakExplained = all_results_list[i][3]
         if (i==0) :
             current_rank = 1
         elif (dScore < dPrevious_Score) :
             current_rank = i+1
-        output_details += str(current_rank)+"\t"+sUniqueID+"\t"+str(dScore)+"\t"+sInchi+"\n"
+        output_details += str(current_rank)+"\t"+sUniqueID+"\t"+str(dScore)+"\t"+sInchi+"\t"+sNumPeakExplained+ "\n"
         dPrevious_Score = dScore
         if (sInchi == scan_inchi) :
             realhit_rank = current_rank
