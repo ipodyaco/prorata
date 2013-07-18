@@ -117,6 +117,8 @@ def extractMassBankFile(input_filename, output_file) :
     if (sPubChemId == "") :
         sPubChemId = "NA"
     if (sMSType == "MS2") :
+        if (dPrecursorEM < 0) :
+            print input_filename, "no precursor"
         output_file.write("*\t"+sAccession+"\t"+sPubChemId+"\t"+str(dPrecursorEM)+"\t"+sInichi+"\n")
         for each_peak in sPeak_list :
             output_file.write("+"+each_peak[0]+" "+each_peak[1]+"\n")
