@@ -130,6 +130,7 @@ def Generate_mb_file(output_dir, realhit_filename) :
             peak_str += each_line[1:]+"\n"
             
     if (bIsMBFileOpen) :
+        current_mb_file.write(peak_str[:-1])
         current_mb_file.close()
     realhit_file.close()
     return mass_list
