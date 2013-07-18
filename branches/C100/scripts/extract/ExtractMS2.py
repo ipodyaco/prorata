@@ -74,6 +74,7 @@ def ReadRealHit(realhit_filename):
     precursor_mz = -1
     realhit_file = open(realhit_filename)
     sPubChemId   = ""
+    sMSType      = ""
 
     for each_line in realhit_file :
         each_line = each_line.strip()
@@ -87,6 +88,8 @@ def ReadRealHit(realhit_filename):
             sPubChemId = each_line.split("PUBCHEM CID:")[1].strip()
         if each_line.startswith("ACCESSION:") :
             sAccession = each_line.split(":")[1].strip()
+        if each_line.startswith("AC$MASS_SPECTROMETRY: MS_TYPE "):
+            sMSType = each_line.split("MS_TYPE")[1].strip()
         if each_line.startswith("PK$PEAK:") :
             bPeakBegin = True
             continue
@@ -105,21 +108,21 @@ def ReadRealHit(realhit_filename):
                 bPeakBegin = False
 
     realhit_file.close()
-    return precursor_mz-dProtonMass, allPeaks_list, s_chemical_structure, sPubChemId, sAccession
+    return precursor_mz-dProtonMass, allPeaks_list, s_chemical_structure, sPubChemId, sAccession, sMSType
 
 def extractMassBankFile(input_filename, output_file) :
 
-    dPrecursorEM, sPeak_list, sInichi, sPubChemId, sAccession = ReadRealHit(input_filename)
+    dPrecursorEM, sPeak_list, sInichi, sPubChemId, sAccession, sMSType = ReadRealHit(input_filename)
 
     if (sPubChemId == "") :
         sPubChemId = "NA"
-    if (dPrecursorEM < 0) :
-        print input_filename
-
-    output_file.write("*\t"+sAccession+"\t"+sPubChemId+"\t"+str(dPrecursorEM)+"\t"+sInichi+"\n")
-    for each_peak in sPeak_list :
-        output_file.write("+"+each_peak[0]+" "+each_peak[1]+"\n")
-    output_file.write("//\n")
+    if (sMSType == "MS2") :
+        output_file.write("*\t"+sAccession+"\t"+sPubChemId+"\t"+str(dPrecursorEM)+"\t"+sInichi+"\n")
+        for each_peak in sPeak_list :
+            output_file.write("+"+each_peak[0]+" "+each_peak[1]+"\n")
+        output_file.write("//\n")
+    else :
+        print input_filename, sMSType
 
 def main(argv=None):
 

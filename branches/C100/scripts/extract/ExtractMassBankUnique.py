@@ -79,6 +79,8 @@ def ReadRealHit(realhit_filename):
     realhit_file = open(realhit_filename)
     sPubChemId   = ""
     sCompoundName= ""
+    sMSType      = ""
+
     for each_line in realhit_file :
         each_line = each_line.strip()
         if each_line.startswith("CH$IUPAC:") :
@@ -91,6 +93,8 @@ def ReadRealHit(realhit_filename):
             sPubChemId = each_line.split("PUBCHEM CID:")[1].strip()
         if each_line.startswith("ACCESSION:") :
             sAccession = each_line.split(":")[1].strip()
+        if each_line.startswith("AC$MASS_SPECTROMETRY: MS_TYPE "):
+            sMSType = each_line.split("MS_TYPE")[1].strip()
         if each_line.startswith("CH$NAME:") :
             sCompoundName += "&"+each_line.split(":")[1].strip()
         if each_line.startswith("PK$PEAK:") :
@@ -111,11 +115,11 @@ def ReadRealHit(realhit_filename):
                 bPeakBegin = False
 
     realhit_file.close()
-    return precursor_mz-dProtonMass, allPeaks_list, s_chemical_structure, sPubChemId, sAccession, sCompoundName
+    return precursor_mz-dProtonMass, allPeaks_list, s_chemical_structure, sPubChemId, sAccession, sCompoundName, sMSType
 
 def extractMassBankFile(input_filename, output_file, all_inchi) :
 
-    dPrecursorEM, sPeak_list, sInchi, sPubChemId, sAccession, sCompoundName = ReadRealHit(input_filename)
+    dPrecursorEM, sPeak_list, sInchi, sPubChemId, sAccession, sCompoundName, sMSType = ReadRealHit(input_filename)
     current_mol  = Chem.MolFromInchi(sInchi)
     dCalculatedMass =  Descriptors.ExactMolWt(current_mol)
     
@@ -126,14 +130,16 @@ def extractMassBankFile(input_filename, output_file, all_inchi) :
     if (sPubChemId == "") :
         sPubChemId = "NA"
 
-    if (sInchi not in all_inchi) :
-        all_inchi.append(sInchi)
-        output_file.write("MassBank_"+sAccession+"\t"+sInchi+"\t"+str(dCalculatedMass)+"\t"+sCompoundName)
-        if (sPubChemId != "NA"):
-            output_file.write("\t(PUBCHEM \""+sPubChemId+"\")\n")
-        else :
-            output_file.write("\t"+sPubChemId+"\n")
-
+    if (sMSType == "MS2") :
+        if (sInchi not in all_inchi) :
+            all_inchi.append(sInchi)
+            output_file.write("MassBank_"+sAccession+"\t"+sInchi+"\t"+str(dCalculatedMass)+"\t"+sCompoundName)
+            if (sPubChemId != "NA"):
+                output_file.write("\t(PUBCHEM \""+sPubChemId+"\")\n")
+            else :
+                output_file.write("\t"+sPubChemId+"\n")
+    else :
+        print input_filename, sMSType
 
 
 #    output_file.write("*\t"+sAccession+"\t"+sPubChemId+"\t"+str(dPrecursorEM)+"\t"+sInchi+"\n")
