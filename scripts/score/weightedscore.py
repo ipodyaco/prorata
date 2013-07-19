@@ -14,14 +14,15 @@ from rdkit.Chem import AllChem
 #dMass_Tolerance_Fragment_Ions = 0.01
 
 
-def OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol) :
+def OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol, bBreakRing) :
 #    global dMass_Tolerance_Fragment_Ions
 #    dMass_Tolerance_Fragment_Ions = 0.01
+    sOtherInfo = "otherinfo"
     dCurrentScore = 0
     dCurrentEnergy = 0
     iIdentifiedPeak= 0
     peakmatch_list = [[] for each_peak in allPeaks_list]
-    ExhaustBonds(current_mol, allPeaks_list, peakmatch_list, sEnergy_Bond_dict)
+    ExhaustBonds(current_mol, allPeaks_list, peakmatch_list, sEnergy_Bond_dict, bBreakRing)
    # print peakmatch_list
     sAnnotation_list = []
     sAnnotation_list.append("m/z\tnormalized_int\trel_int\tH_added\tformula\tSMILES\types_bonds_cleaved\terror_Da")
@@ -38,19 +39,19 @@ def OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol) :
         else :
             sCurrentAnnotation += "\tNA"
         sAnnotation_list.append(sCurrentAnnotation)
-    return dCurrentScore, dCurrentEnergy, iIdentifiedPeak, sAnnotation_list
+    return dCurrentScore, dCurrentEnergy, iIdentifiedPeak, sAnnotation_list, sOtherInfo
 
 
-def TreeLikeBreakBondsDepthFirst(current_mol, iBondsNum, allPeaks_list, iDepth, peakmatch_list, sEnergy_Bond_dict, energy_denominator) :
+def TreeLikeBreakBondsDepthFirst(current_mol, iBondsNum, allPeaks_list, iDepth, peakmatch_list, sEnergy_Bond_dict, energy_denominator, bBreakRing) :
     root_node = [Chem.EditableMol(current_mol),[],0] # editable_mol,list of list of removed bonds, depth
-    current_ring_bonds_list, current_linear_bonds_list = ClassifyBonds(root_node[0].GetMol())
+    current_ring_bonds_list, current_linear_bonds_list = ClassifyBonds(root_node[0].GetMol(), bBreakRing)
     current_ringbonds_iter = itertools.combinations(current_ring_bonds_list, 2)
     current_ringbonds_combination_list = list(current_ringbonds_iter)
     unprocessedKid = []
     storedNodes = [[root_node, current_linear_bonds_list, current_ringbonds_combination_list, unprocessedKid]]
     while (len(storedNodes) > 0) :
         if (len(storedNodes[-1][3]) > 0) : # unprocessed kid
-            new_item = processKid(storedNodes[-1][3][0][0], storedNodes[-1][3][0][1], storedNodes[-1][0][2]+1, allPeaks_list, peakmatch_list, sEnergy_Bond_dict, energy_denominator) 
+            new_item = processKid(storedNodes[-1][3][0][0], storedNodes[-1][3][0][1], storedNodes[-1][0][2]+1, allPeaks_list, peakmatch_list, sEnergy_Bond_dict, energy_denominator, bBreakRing) 
             del storedNodes[-1][3][0]
             if (new_item[0][2] < iDepth) :
                 storedNodes.append(new_item)
@@ -169,14 +170,15 @@ def DumpOneFragment(current_fragment_mol, FragmentBonds_list) :
     #print current_dMass, current_sFragmentFormula, sBondsTypes, current_smiles
     return current_dMass, current_sFragmentFormula, current_smiles
 
-def ClassifyBonds(current_mol) :
+def ClassifyBonds(current_mol, bBreakRing) :
     ring_bonds_list   = []
     linear_bonds_list = []
     iBondsNum = current_mol.GetNumBonds() 
     for i in range(iBondsNum) :
         current_bond = current_mol.GetBondWithIdx(i)
         if current_bond.IsInRing()  :
-            ring_bonds_list.append(current_bond)
+            if (bBreakRing) :
+                ring_bonds_list.append(current_bond)
         else :
             linear_bonds_list.append(current_bond)
     return ring_bonds_list, linear_bonds_list
@@ -199,12 +201,12 @@ def RemoveBonds(current_mol, bonds_list) :
     return current_fragments_list, bValidOperation
 
 
-def processKid(current_editable_mol, current_removebond_list, iCurrent_depth, allPeaks_list, peakmatch_list, sEnergy_Bond_dict, energy_denominator) :
+def processKid(current_editable_mol, current_removebond_list, iCurrent_depth, allPeaks_list, peakmatch_list, sEnergy_Bond_dict, energy_denominator, bBreakRing) :
     #print current_editable_mol
     current_mol = current_editable_mol.GetMol()
     current_dMass, current_sFragmentFormula, current_smiles=DumpOneFragment(current_mol, current_removebond_list)
     bFindPeak = MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, current_removebond_list, sEnergy_Bond_dict, energy_denominator)
-    current_ring_bonds_list, current_linear_bonds_list = ClassifyBonds(current_mol)
+    current_ring_bonds_list, current_linear_bonds_list = ClassifyBonds(current_mol, bBreakRing)
     current_ringbonds_iter = itertools.combinations(current_ring_bonds_list, 2)
     current_ringbonds_combination_list = list(current_ringbonds_iter)
     unprocessedKid = []
@@ -240,7 +242,7 @@ def CalculateEnergyDenominator(current_mol, sEnergy_Bond_dict) :
         energy_denominator = 1
     return energy_denominator
 
-def ExhaustBonds(current_mol, allPeaks_list, peakmatch_list, sEnergy_Bond_dict) :
+def ExhaustBonds(current_mol, allPeaks_list, peakmatch_list, sEnergy_Bond_dict, bBreakRing) :
     
     energy_denominator = CalculateEnergyDenominator(current_mol, sEnergy_Bond_dict)
     
@@ -250,6 +252,6 @@ def ExhaustBonds(current_mol, allPeaks_list, peakmatch_list, sEnergy_Bond_dict) 
     MapMass(Descriptors.ExactMolWt(current_mol), allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, [],sEnergy_Bond_dict, energy_denominator)
     iBondsNum = current_mol.GetNumBonds()
     #TreeLikeBreakBonds(current_mol, iBondsNum, allPeaks_list, 3, peakmatch_list)
-    TreeLikeBreakBondsDepthFirst(current_mol, iBondsNum, allPeaks_list, 3, peakmatch_list, sEnergy_Bond_dict, energy_denominator)
+    TreeLikeBreakBondsDepthFirst(current_mol, iBondsNum, allPeaks_list, 3, peakmatch_list, sEnergy_Bond_dict, energy_denominator, bBreakRing)
 
 
