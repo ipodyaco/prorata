@@ -7,7 +7,7 @@ from multiprocessing import Pool
 
 def parse_options(argv):
     
-    opts, args = getopt.getopt(argv[1:], "hvbw:i:p:o:e:n:",
+    opts, args = getopt.getopt(argv[1:], "hvbw:i:p:o:e:n:t:",
                                     ["help",
                                      "verbose",
                                      "break-ring",
@@ -16,7 +16,8 @@ def parse_options(argv):
                                      "compound-filename",
 				                     "output-dir",
                                      "energy-filename",
-                                     "process-number"])
+                                     "process-number",
+                                     "precursor-type"])
 
     # Default working dir and config file
     working_dir     = ""
@@ -27,11 +28,12 @@ def parse_options(argv):
     process_number    = 0
     bSpectrumDetails  = False
     bBreakRing        = False
+    precursor_type    = 1
 
     # Basic options
     for option, value in opts:
         if option in ("-h", "--help"):
-            print "-w working-dir -i input_filename -p compound_filename -o folder_dir -e energy_filename -n process_number -v verbose -b breakring"
+            print "-w working-dir -i input_filename -p compound_filename -o folder_dir -e energy_filename -n process_number -v verbose -b breakring -t precursor-type"
             sys.exit(0)
         if option in ("-w", "--working-dir") :
             working_dir = value
@@ -53,12 +55,17 @@ def parse_options(argv):
             energy_filename   = value
         if option in ("-n", "--process-number"):
             process_number = int(value)
+        if option in ("-t", "--precursor-type") :
+            precursor_type = int(value)
+            if ((precursor_type != 1) and (precursor_type != -1)) :
+                print "-t precursor type must be 1 or -1"
+                sys.exit(1)
 
     if ((working_dir == "") or (input_filename == "") or (compound_filename == "") or (output_foldername == "") or (energy_filename == "") or (process_number == 0)) :
         print "please specify working dir, input file name, compound file, output dir, and energy file"
         sys.exit(1)
     
-    return [working_dir, input_filename, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails, bBreakRing]
+    return [working_dir, input_filename, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails, bBreakRing, precursor_type]
 
 
 ## Get file(s) list in working dir with specific file extension
@@ -88,7 +95,7 @@ def get_file_list_with_ext(working_dir, file_ext):
 
     return file_list
 
-def HandleOneRealHit (script_dir, realhit_filename, compound_filename, output_filename, energy_filename, bSpectrumDetails, bBreakRing) :
+def HandleOneRealHit (script_dir, realhit_filename, compound_filename, output_filename, energy_filename, bSpectrumDetails, bBreakRing, precursor_type) :
     # change scoring_A.py to scoring.py will go to metfrag scoring function
     if (bSpectrumDetails) :
         vstr = " -v "
@@ -98,11 +105,11 @@ def HandleOneRealHit (script_dir, realhit_filename, compound_filename, output_fi
         bstr = " -b "
     else :
         bstr = ""
-    command_str = "python "+script_dir+os.sep+"scoring_A.py -m "+realhit_filename+" -p "+compound_filename+" -o "+output_filename+" -e "+energy_filename + vstr + bstr
-#    print command_str
+    command_str = "python "+script_dir+os.sep+"scoring_A.py -m "+realhit_filename+" -p "+compound_filename+" -o "+output_filename+" -e "+energy_filename + " -t "+ str(precursor_type)  +vstr + bstr
+ #   print command_str
     os.system(command_str)
 
-def HandleAllRealHits(script_dir, working_dir, all_realhit_filename, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails, bBreakRing):
+def HandleAllRealHits(script_dir, working_dir, all_realhit_filename, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails, bBreakRing, precursor_type):
    
     mypool = Pool(processes=process_number)
     all_realhit_file = open(all_realhit_filename)
@@ -119,7 +126,7 @@ def HandleAllRealHits(script_dir, working_dir, all_realhit_filename, compound_fi
                 sys.exit(1)
             current_output_filename = output_foldername + os.path.basename(each_realhit_filename) + ".output.txt"
             #print script_dir+os.sep, current_output_filename     
-            result = mypool.apply_async(HandleOneRealHit,(script_dir,each_realhit_filename,compound_filename,current_output_filename,energy_filename, bSpectrumDetails, bBreakRing))
+            result = mypool.apply_async(HandleOneRealHit,(script_dir,each_realhit_filename,compound_filename,current_output_filename,energy_filename, bSpectrumDetails, bBreakRing, precursor_type))
     mypool.close()
     mypool.join()
 #    if result.successful():
@@ -129,15 +136,15 @@ def HandleAllRealHits(script_dir, working_dir, all_realhit_filename, compound_fi
 
 def main(argv=None):
 
-    precursor_accuracy = 0.02
+    #precursor_accuracy = 0.02
     # try to get arguments and error handling
     if argv is None:
         argv = sys.argv
        		 # parse options
-        [working_dir, all_realhit_filename, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails, bBreakRing] = parse_options(argv)
+        [working_dir, all_realhit_filename, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails, bBreakRing, precursor_type] = parse_options(argv)
         script_path = sys.argv[0]
         script_dir  = os.path.dirname(os.path.abspath(script_path))
-        HandleAllRealHits(script_dir, working_dir, all_realhit_filename, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails, bBreakRing)
+        HandleAllRealHits(script_dir, working_dir, all_realhit_filename, compound_filename, output_foldername, energy_filename, process_number, bSpectrumDetails, bBreakRing, precursor_type)
 
 
 

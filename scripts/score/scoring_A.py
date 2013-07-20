@@ -12,14 +12,15 @@ import weightedscore
 
 def parse_options(argv):
     
-    opts, args = getopt.getopt(argv[1:], "hbvm:p:o:e:",
+    opts, args = getopt.getopt(argv[1:], "hbvm:p:o:e:t:",
                                     ["help",
                                      "break-ring",
                                      "verbose",
                                      "realhit-filename",
                                      "compound-filename",
 				                     "output-filename",
-                                     "energy-filename"])
+                                     "energy-filename",
+                                     "precursor-type"])
 
 
     # Default working dir and config file
@@ -29,11 +30,12 @@ def parse_options(argv):
     energy_filename   = ""
     bSpectrumDetails  = False
     bBreakRing        = False
+    precursor_type    = 1
 
     # Basic options
     for option, value in opts:
         if option in ("-h", "--help"):
-            print "-m realhit_filename -p compound_filename -o output_filename -e energy_filename -v verbose -b breakring"
+            print "-m realhit_filename -p compound_filename -o output_filename -e energy_filename -v verbose -b breakring -t precursor-type"
             sys.exit(0)
         if option in ("-m", "--realhit-filename"):
             realhit_filename  = value
@@ -47,12 +49,17 @@ def parse_options(argv):
             bSpectrumDetails  = True
         if option in ("-b", "--break-ring") :
             bBreakRing = True
+        if option in ("-t", "--precursor-type"): 
+            precursor_type = int(value)
+            if ((precursor_type != 1) and (precursor_type != -1)) :
+                print "precursor type must be 1 or -1"
+                sys.exit(1)
 
     if ((realhit_filename == "") or (compound_filename == "") or (output_filename == "") or (energy_filename == "")) :
         print "please specify realhit file, compound file, output file, and energy file"
         sys.exit(1)
     
-    return [realhit_filename, compound_filename, output_filename, energy_filename, bSpectrumDetails, bBreakRing]
+    return [realhit_filename, compound_filename, output_filename, energy_filename, bSpectrumDetails, bBreakRing, precursor_type]
 
 ## Get file(s) list in working dir with specific file extension
 def get_file_list_with_ext(working_dir, file_ext):
@@ -281,7 +288,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
        		 # parse options
-        [realhit_filename, compound_filename, output_filename, energy_filename, bSpectrumDetails, bBreakRing] = parse_options(argv)  
+        [realhit_filename, compound_filename, output_filename, energy_filename, bSpectrumDetails, bBreakRing, precursor_type] = parse_options(argv)  
 
     Compound_Scores_list = []
     sEnergy_Bond_dict = ReadEnergyFile(energy_filename)
@@ -302,7 +309,7 @@ def main(argv=None):
             continue
         #print current_mol.GetNumBonds()
         #dCurrentWeight, dCurrentEnergy, iIdentifiedPeak = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, current_mol)
-        dCurrentScore, dCurrentEnergy, iIdentifiedPeak, sAnnotation_list, sOtherInfo= weightedscore.OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol, bBreakRing)
+        dCurrentScore, dCurrentEnergy, iIdentifiedPeak, sAnnotation_list, sOtherInfo= weightedscore.OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol, bBreakRing, precursor_type)
         Compound_Scores_list.append([dCurrentScore, dCurrentEnergy, each_compound[0], each_compound[1], each_compound[3], iIdentifiedPeak, sOtherInfo,  sAnnotation_list])
 #    real_mol = Chem.MolFromInchi(s_chemical_structure)
     #dRealWeight, dRealEnergy, iIdentifiedPeak  = metfrag.MetFragScore(sEnergy_Bond_dict, allPeaks_list, real_mol)
