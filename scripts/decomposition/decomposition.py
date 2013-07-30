@@ -174,6 +174,7 @@ def DumpOneFragment(current_fragment_mol, FragmentBonds_list) :
     #current_SanitizedMol = Chem.SanitizeMol(current_fragment_mol)
     #current_inchi =  Chem.MolToInchi(current_fragment_mol)
     current_smiles=  Chem.MolToSmiles (current_fragment_mol)
+    #current_smiles =  Chem.MolToInchi  (current_fragment_mol)
     #print current_dMass, current_sFragmentFormula, sBondsTypes, current_smiles
     return current_dMass, current_sFragmentFormula, current_smiles
 
