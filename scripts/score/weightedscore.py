@@ -39,10 +39,10 @@ def OwnScore(sEnergy_Bond_dict, allPeaks_list, current_mol, bBreakRing, precurso
         else :
             sCurrentAnnotation += "\tNA"
         sAnnotation_list.append(sCurrentAnnotation)
-        sOtherInfo = GenerateStatisticalInfo(peakmatch_list, iIdentifiedPeak, total_fragment_list, observed_fragment_list)
-        if (bRankSum) :
-            iUnIdentifiedPeak = len(allPeaks_list) - iIdentifiedPeak
-            dCurrentScore = CalculateRankSumScore(all_compound_match, iUnIdentifiedPeak)
+    sOtherInfo = GenerateStatisticalInfo(peakmatch_list, iIdentifiedPeak, total_fragment_list, observed_fragment_list)
+    if (bRankSum) :
+        iUnIdentifiedPeak = len(allPeaks_list) - iIdentifiedPeak
+        dCurrentScore = CalculateRankSumScore(all_compound_match, iUnIdentifiedPeak)
     return dCurrentScore, dCurrentEnergy, iIdentifiedPeak, sAnnotation_list, sOtherInfo
 
 def CalculateRankSumScore(all_compound_match, iUnIdentifiedPeak) :
@@ -177,8 +177,11 @@ def SubScore(dIntensity, dErrorDa, dF, dMass_Tolerance_Fragment_Ions, current_mz
 def MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormula, current_smiles, FragmentBonds_list, sEnergy_Bond_dict, energy_denominator, precursor_type, total_fragment_list, observed_fragment_list, current_depth) :
     total_fragment_list[current_depth] += 1
     z_list = [1] 
-#    print precursor_type
-    mz_windows_list = [-1, 0, 1, 2]
+    if  (precursor_type == 1) :
+        mz_windows_list = [-1, 0, 1, 2]
+    else :
+        mz_windows_list = [-2, -1, 0, 1, 2]
+    #print mz_windows_list
     dMass_Tolerance_Fragment_Ions = 0.01
     dHMass = 1.007825
     bFindPeak = False
