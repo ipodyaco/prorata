@@ -178,9 +178,11 @@ def MapMass(current_dMass, allPeaks_list, peakmatch_list, current_sFragmentFormu
     total_fragment_list[current_depth] += 1
     z_list = [1] 
     if  (precursor_type == 1) :
-        mz_windows_list = [-1, 0, 1, 2]
-    else :
+#        mz_windows_list = [-1, 0, 1, 2]
         mz_windows_list = [-2, -1, 0, 1, 2]
+    else :
+#        mz_windows_list = [-2, -1, 0, 1, 2]
+        mz_windows_list = [-2, -1, 0, 1]
     #print mz_windows_list
     dMass_Tolerance_Fragment_Ions = 0.01
     dHMass = 1.007825
