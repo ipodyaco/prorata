@@ -115,7 +115,8 @@ def ReadRealHit(realhit_filename):
         if each_line.startswith("MS$FOCUSED_ION: PRECURSOR_TYPE ") :
             sPrecursorType = each_line.split("PRECURSOR_TYPE")[1].strip()
         if each_line.startswith("CH$NAME:") :
-            sCompoundName += "&"+each_line.split(":")[1].strip()
+            if ( sCompoundName == "" ) :
+                sCompoundName += each_line.split(":")[1].strip()
         if each_line.startswith("PK$PEAK:") :
             bPeakBegin = True
             continue
