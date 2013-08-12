@@ -87,7 +87,9 @@ def extractMassBankFile(input_filename, output_file, all_inchi) :
             dCalculatedMass = calculateMass(sInchi)
         if (sInchi not in all_inchi) :
             all_inchi.append(sInchi)
-            output_file.write("MassBank_"+sAccession+"\t"+sInchi+"\t"+sCompoundName+"\t"+"(MassBank="+sAccession+")\n")
+            sCompoundName = sCompoundName.replace("\t", "")
+            output_file.write("MassBank_"+sAccession+"\t"+sCompoundName+"\t"+sInchi+"\t"+"(MassBank="+sAccession+")\n")
+            #output_file.write("MassBank_"+sAccession+"\t"+sInchi+"\t"+sCompoundName+"\t"+"(MassBank="+sAccession+")\n")
             #if (sPubChemId != "NA"):
             #    output_file.write("\t(PUBCHEM \""+sPubChemId+"\")\n")
             #else :
