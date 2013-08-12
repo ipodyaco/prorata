@@ -108,9 +108,10 @@ def parseInputFile(input_filename, output_filename) :
                 
                 print "one feature of", sUNIQUE_ID, sInchi, "is missed"
             else :
+                sCommonName = sCommonName.replace("\t", "")
                 output_file.write(sCurrentInternalID+"\t")
-                output_file.write(sInchi+"\t"+"\t")
                 output_file.write(sCommonName+"\t")
+                output_file.write(sInchi+"\t")
                 if (sDBLink != "NA") :
                     output_file.write(sDBLink+"\n")
                 else:
