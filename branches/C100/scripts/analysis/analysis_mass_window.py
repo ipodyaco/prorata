@@ -78,7 +78,7 @@ def main(argv=None):
        		 # parse options
         input_filename ,  output_filename = parse_options(argv)  
         all_info_list = ReadOtherInfo(input_filename)
-        OutputMassWindowInfo(output_filename, all_info_list,[-1,0,1,2])
+        OutputMassWindowInfo(output_filename, all_info_list,[-2,-1,0,1,2])
 
 ## If this program runs as standalone, then go to main.
 if __name__ == "__main__":
