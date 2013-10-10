@@ -114,6 +114,8 @@ def ReadRealHit(realhit_filename):
             sMSType = each_line.split("MS_TYPE")[1].strip()
         if each_line.startswith("MS$FOCUSED_ION: PRECURSOR_TYPE ") :
             sPrecursorType = each_line.split("PRECURSOR_TYPE")[1].strip()
+        if each_line.startswith("AC$MASS_SPECTROMETRY: ION_MODE"):
+            sPrecursorType = each_line.split("ION_MODE")[1].strip()
         if each_line.startswith("CH$NAME:") :
             if ( sCompoundName == "" ) :
                 sCompoundName += each_line.split(":")[1].strip()
@@ -138,12 +140,12 @@ def ReadRealHit(realhit_filename):
     current_mode = 0
     massdiff = -1
     bLegalStructure,dCalculatedMass = VerifyStructure(s_chemical_structure)
-    if (sPrecursorType == "[M+H]+") :
+    if ((sPrecursorType == "[M+H]+") or (sPrecursorType == "POSITIVE")):
         current_mode = 1
         massdiff = math.fabs(precursor_mz-dProtonMass - dCalculatedMass)
         if ((massdiff >= 0.01) and (sMSType == "MS2")):
             print realhit_filename, massdiff, "1"
-    if (sPrecursorType == "[M-H]-") :
+    if ((sPrecursorType == "[M-H]-") or (sPrecursorType == "NEGATIVE")):
         current_mode = -1
         massdiff = math.fabs(precursor_mz+dProtonMass - dCalculatedMass)
         if ((massdiff >= 0.01) and (sMSType == "MS2")):
