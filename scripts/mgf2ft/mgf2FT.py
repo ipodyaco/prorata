@@ -67,13 +67,14 @@ def get_file_list_with_ext(working_dir, file_ext):
 
     return file_list
 
-def outputFT2(current_spectrum_list, s_scanId, d_precursor_mz, i_precursor_z, current_FT2_file):
+def outputFT2(current_spectrum_list, s_scanId, d_precursor_mz, i_precursor_z, current_FT2_file, d_retention_time):
     current_FT2_file.write("S\t"+s_scanId+"\t"+s_scanId+"\t"+str(d_precursor_mz)+"\n")
     if (i_precursor_z == 0) :
         z_mz = 0
     else :
         z_mz = i_precursor_z*d_precursor_mz
     current_FT2_file.write("Z\t"+str(i_precursor_z)+"\t"+str(z_mz)+"\n")
+    current_FT2_file.write("I\tRetentionTime\t"+str(d_retention_time)+"\n")
     for each_peak in current_spectrum_list :
         current_FT2_file.write(each_peak[0]+"\t"+each_peak[1]+"\t0\t0\t0\t0\n")
 
@@ -103,7 +104,7 @@ def ConvertMgfFile(current_mgf_filename, output_dir) :
             if (s_scanId == "") or (d_precursor_mz == 0) :
                 print "ill scan", s_scanId
             else:
-                outputFT2(current_spectrum_list, s_scanId, d_precursor_mz, i_precursor_z, current_FT2_file)
+                outputFT2(current_spectrum_list, s_scanId, d_precursor_mz, i_precursor_z, current_FT2_file, d_retention_time)
             continue
         
         if each_line.startswith("TITLE=scanId=") :
@@ -113,6 +114,9 @@ def ConvertMgfFile(current_mgf_filename, output_dir) :
         elif (each_line.startswith("PEPMASS=")):
             precursor_info = each_line.split("=")[1]
             d_precursor_mz = precursor_info.split(" ")[0]
+        elif (each_line.startswith("RTINSECONDS=")) :
+            d_retention_time = each_line.split("=")[1]
+            
         elif (each_line[0:1].isdigit()) :
             
             peak_info = each_line.split(" ")
