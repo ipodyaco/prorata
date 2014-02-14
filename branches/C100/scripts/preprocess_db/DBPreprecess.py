@@ -30,7 +30,7 @@ def parse_options (argv) :
         print "Please specify input file name"
         sys.exit(1)
     if (sOutput_Filename == "") :
-        sOutput_Filename =  os.path.splitext(sInput_Filename)[0]+".neu.meb"
+        sOutput_Filename =  os.path.splitext(sInput_Filename)[0]+".neu.mdb"
     
     return [sInput_Filename, sOutput_Filename]
 
@@ -67,6 +67,12 @@ def NeutraliseCharges(smiles, reactions=None):
         reactions=_reactions
     mol = Chem.MolFromSmiles(smiles)
     replaced = False
+    iChargeSum = 0
+    all_atoms_list = mol.GetAtoms()
+    for each_atom in all_atoms_list:
+        iChargeSum += each_atom.GetFormalCharge()
+    if (iChargeSum==0) :
+        return (mol, False)
     for i,(reactant, product) in enumerate(reactions):
         while mol.HasSubstructMatch(reactant):
             replaced = True
@@ -75,7 +81,7 @@ def NeutraliseCharges(smiles, reactions=None):
 
     updated_smiles = Chem.MolToSmiles(mol,True)
     updated_mol    = Chem.MolFromSmiles(updated_smiles)
-
+    #print smiles, updated_smiles
     if replaced:
         return (updated_mol, True)
     else:
@@ -88,6 +94,7 @@ def CalCompoundMass(sInchi) :
     if (replaced) :
         current_mass = Descriptors.ExactMolWt(neutral_mol)
         sInchi       = Chem.MolToInchi(neutral_mol)
+        testmol      = Chem.MolFromInchi(sInchi)
     else :
         current_mass = Descriptors.ExactMolWt(current_mol)
     return current_mass, sInchi, replaced
@@ -119,6 +126,7 @@ def ReadCompoundFile(compound_filename, output_filename) :
         dMass, updated_inchi, bReplaced = CalCompoundMass(sInchi)
         #print dMass, updated_inchi
         if (bReplaced) :
+            print each_line
             if (bNewFormat) :
                 current_compound_info[2] = updated_inchi
             else :
