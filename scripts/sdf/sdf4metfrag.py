@@ -142,7 +142,7 @@ def WriteToSdf(current_sdf_file, compound_internal_id, compound_inchi) :
     current_sdf_file.write(current_mol)
 
 def Generate_sdf(database_filename, output_dir, mass_list) :
-    precursor_accuracy = 0.01
+    precursor_accuracy = 0.5
     for each_entry in mass_list :
         current_name = each_entry[0]
         current_mass = float(each_entry[1]) # the proton mass have been removed by another script
