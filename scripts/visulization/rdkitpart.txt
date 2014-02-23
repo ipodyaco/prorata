@@ -1,0 +1,12 @@
+>>> from rdkit import Chem
+>>> from rdkit.Chem import AllChem
+>>> from rdkit.Chem import Draw
+>>> m = Chem.MolFromSmiles('c1nccc2n1ccc2')
+>>> AllChem.Compute2DCoords(m)
+0
+>>> Draw.MolToFile(m,'example.svg', imagetype=svg)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'svg' is not defined
+>>> Draw.MolToFile(m,'example.svg', imagetype="svg")
+
